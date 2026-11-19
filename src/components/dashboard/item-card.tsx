@@ -101,7 +101,8 @@ function ItemCardBody({ item, today, title }: Omit<Props, 'href'> & { title: Rea
       >
         {title}
       </h3>
-      {people && <p className="mt-1.25 truncate text-xs text-muted-foreground">{people}</p>}
+      {/* The people line sits at the bottom of the card, for every title length. */}
+      {people && <p className="mt-auto truncate pt-1.25 text-xs text-muted-foreground">{people}</p>}
     </>
   )
 }
