@@ -6,3 +6,27 @@ minimumReleaseAge: 40320
 onlyBuiltDependencies:
   - esbuild
   - unrs-resolver
+
+# Patched versions of sub-dependencies (fixes from `pnpm audit`).
+# Each version passes the release-age rule.
+overrides:
+  # Payload pins 7.29.1.
+  undici: 7.30.1
+  # Via @payloadcms/ui > monaco-editor.
+  dompurify: 3.4.17
+  # Via drizzle-kit > @esbuild-kit/core-utils (0.18.20). Same version as the rest of the tree.
+  '@esbuild-kit/core-utils>esbuild': 0.28.2
+  # Optional peer of Vitest for browser-like tests. Not used.
+  happy-dom: '-'
+
+# Known advisories with no fix that passes the release-age rule yet.
+# Remove each entry when its fix passes the rule, and upgrade.
+auditConfig:
+  ignoreGhsas:
+    # next < 16.4.5: cache leaks with 'use cache' and root params. Not used here.
+    # Fix 16.4.5 passes the rule on 2026-12-01.
+    - GHSA-mfr8-8qww-v76h
+    - GHSA-vc7v-qv4w-wrv8
+    # minimatch < 11.0.1: ReDoS in glob patterns. Dev only (ESLint parser).
+    # Fix 11.0.1 passes the rule on 2026-11-24.
+    - GHSA-g3hv-75wg-m249
