@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+
+# Build output
+build/
+dist/
+
+# Payload
+/media/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# Environment (commit .env.example only)
+.env
+.env.*
+!.env.example
+
+# Tests and coverage
+coverage/
+playwright-report/
+test-results/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS and editors
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Local agent notes (not part of the project)
+.claude/
+CLAUDE.local.md
+
+# Misc
+*.tsbuildinfo
+.vercel

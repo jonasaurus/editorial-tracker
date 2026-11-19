@@ -1,0 +1,169 @@
+# Editorial Tracker – product specification
+
+This document is the source of truth for behaviour. The design rules are in [design-system.md](design-system.md). The reasons for the main technical choices are in [adr/](adr/).
+
+Each rule has an id (for example `PERM-3`). Tests and commit messages refer to these ids.
+
+## 1. Purpose
+
+A small newsroom plans its content in the Editorial Tracker. An item (an article, a video, a podcast episode or a newsletter) moves through four statuses: Idea, Draft, Review and Published. Editors manage all items. Contributors manage their own items.
+
+## 2. Users and roles
+
+| Role | Can do |
+|---|---|
+| **Editor** | See and change all items. Set any status, including Published. Archive and unarchive any item. Use the Admin panel (`/admin`). |
+| **Contributor** | See and change only own items. Set the status to Idea, Draft or Review. Cannot publish. |
+
+- **ROLE-1** A user has one role: `editor` or `contributor`.
+- **ROLE-2** Only an editor can change the `role` field of a user.
+- **ROLE-3** Only an editor can open the Admin panel.
+- **ROLE-4** The app seeds 1 editor and 2 contributors with known passwords. The login screen lists them in development only ("Demo users · dev only").
+
+## 3. Item model
+
+| Field | Type | Rules |
+|---|---|---|
+| `title` | text | Required. |
+| `status` | `idea` \| `draft` \| `review` \| `published` | Default `idea`. |
+| `type` | `article` \| `video` \| `podcast` \| `newsletter` | Required. |
+| `authors` | users, many | At least the creator on create (see AUTH-1). |
+| `deadline` | date only (`YYYY-MM-DD`) | Optional. No time, no time zone. |
+| `createdBy` | user | Set by the server on create. Read-only. |
+| `archived` | boolean | Default `false`. Not a status. |
+| `publishedAt` | date-time | Set by the server. Read-only. |
+| `createdAt`, `updatedAt` | date-time | Set by Payload. |
+
+- **MODEL-1** `createdBy` is set from the logged-in user when the item is created. A request cannot set or change it.
+- **MODEL-2** `publishedAt` is set each time the status changes to `published`, also on create. It keeps its value when the item is unpublished. The UI shows the published date only while the status is `published`.
+- **MODEL-3** There is no `updatedBy`, `archivedBy` or `archivedAt`. The UI shows `createdBy`, `createdAt` and `updatedAt` only.
+
+## 4. Permissions
+
+"Own item" means: the user is `createdBy`, or the user is in `authors`.
+
+- **PERM-1** A contributor can read only own items. This applies to the list, to a single item and to every API (REST, GraphQL, Local API, Admin panel).
+- **PERM-2** A contributor can update only own items that are not published.
+- **PERM-3** Only an editor can set the status to `published`, or change the status of a published item (unpublish).
+- **PERM-4** A contributor can set the status to `idea`, `draft` or `review`, in any order. An editor can set any status, in any order.
+- **PERM-5** Only an editor can archive or unarchive a published item. A contributor can archive or unarchive own unpublished items.
+- **PERM-6** An archived item is read-only. The server rejects every change except unarchive. A save that sends the unchanged status is not a status change.
+- **PERM-7** No delete in the app. Archive replaces delete. An editor can delete in the Admin panel.
+- **PERM-8** The server enforces all rules. The UI only hides or locks actions that the server rejects. Local API calls from the app use the logged-in `user` and `overrideAccess: false`.
+
+### Authors
+
+- **AUTH-1** A new item starts with the current user in `authors`.
+- **AUTH-2** A contributor can add or remove other authors on own items, but cannot remove themselves. The server rejects such an update. In the UI, the contributor's own row is checked and disabled.
+- **AUTH-3** An editor can change `authors` freely.
+
+## 5. Deadlines
+
+- **DL-1** `today` is the current calendar date in Europe/Copenhagen, computed on the server.
+- **DL-2** One function decides the state: `getDeadlineState(item, today)` returns `none | upcoming | today | overdue | done`.
+  - `done`: the item is published or archived.
+  - `none`: no deadline.
+  - `overdue`: deadline < today.
+  - `today`: deadline = today.
+  - `upcoming`: deadline > today.
+- **DL-3** Compare plain dates. Never compare timestamps (this prevents off-by-one errors from UTC).
+- **DL-4** One formatter makes all deadline text: `formatDeadline(deadline, state, today, 'short' | 'long')`. See the design system for the text and the styles.
+- **DL-5** The overdue count in the app bar uses the same rule as the cards.
+
+## 6. Screens and behaviour
+
+### 6.1 Login (`/login`)
+
+- **LOGIN-1** Email and password. The server calls Payload `login` and sets the `payload-token` cookie as httpOnly.
+- **LOGIN-2** Wrong email or wrong password gives the same message: "The email or password is not correct." (Do not show which users exist.)
+- **LOGIN-3** A logged-in user who opens `/login` goes to `/`. A user without a session goes to `/login?next=<url>` and returns to `next` after login.
+
+### 6.2 Dashboard (`/`)
+
+The dashboard is the only page. One app bar holds: the mark, the user menu, the counts, the filters, the Board/List switch and "New item".
+
+- **DASH-1** The view is in the URL: `?view=board` (default) or `?view=list`.
+- **DASH-2** Filters: Type, Author (editors only), Show archived. Filters are in the URL.
+- **DASH-3** The Author filter matches `authors` OR `createdBy`.
+- **DASH-4** Counts follow the Type and Author filters, not the status. Format: "14 items · 2 overdue · 1 archived". Hide "· n overdue" when n is 0. With a filter that hides items: "0 of 14 items".
+- **DASH-5** Archived items are hidden unless "Show archived" is on.
+- **DASH-6** User menu: name and role (not clickable), "Admin panel ↗" (editors only, opens a new tab), "Log out".
+
+### 6.3 Board view
+
+- **BOARD-1** Four columns, one per status. Each column shows its count.
+- **BOARD-2** Cards in a column are sorted by deadline, earliest first. Items with no deadline come last.
+- **BOARD-3** A card shows: type, deadline, title, authors and creator ("Sara Nielsen · created by Mette Holm"). An archived card also shows an "Archived" label.
+- **BOARD-4** A click on a card opens the item dialog.
+
+### 6.4 Drag and drop (board, desktop only)
+
+- **DND-1** Drag a card to another column to change its status. The same rules as the dialog apply, and the server checks them.
+- **DND-2** A column where the user cannot drop is marked as not allowed (for a contributor: Published).
+- **DND-3** During a drag over Published, the column shows the publish pulse (the same animation as the armed Publish button).
+- **DND-4** If the server rejects the change, the card goes back to its old column, and an error toast shows.
+- **DND-5** Keyboard and screen-reader users can move a card (the library gives this).
+- **DND-6** There is no undo. To undo a move, drag the card back.
+
+### 6.5 List view
+
+- **LIST-1** Status tabs (All, Idea, Draft, Review, Published) with counts. The tabs are links that change the URL.
+- **LIST-2** Columns: Title, Type, Status, Authors, Created by, Deadline.
+- **LIST-3** Sort by a column header. The sort is in the URL (`?sort=…&dir=…`). The server sorts. Default: deadline ascending, no deadline last.
+- **LIST-4** Archived rows (with "Show archived" on) are greyed. There is no "Archived" tab.
+- **LIST-5** On small screens, the list view is the only view. There is no drag and drop on mobile.
+
+### 6.6 Item dialog
+
+The item dialog is the content view. It is a dialog over the dashboard, not a separate page.
+
+- **ITEM-1** The open item is in the URL (`?item=<id>`). A cold load of that URL renders the dialog on the server.
+- **ITEM-2** Open with a history `push`. Close with `replace` to the dashboard URL, and keep the filters.
+- **ITEM-3** Fields: title, status (stepper), type, deadline, authors. A metadata line shows creator and dates.
+- **ITEM-4** Status stepper: the user selects a step. Steps the user cannot select are locked, with a lock icon and a tooltip (for a contributor: "Only editors can publish items").
+- **ITEM-5** Publish is "armed": when an editor selects the Published step, the footer button changes from "Save changes" to "Publish", with the publish pulse. There is no separate Publish button.
+- **ITEM-6** Publish is one atomic update. If validation fails, the status does not change.
+- **ITEM-7** The dialog closes after a successful save or publish. The card moves to its new column. No success toast.
+- **ITEM-8** Archived item: a banner at the top ("This item is archived. It is read-only and hidden unless “Show archived” is on. Unarchive to edit it again."), all fields read-only, and one button: "Unarchive".
+- **ITEM-9** Archive and Unarchive ask for confirmation. If the form has unsaved edits, the edits are discarded.
+- **ITEM-10** Close (Esc, ✕, Cancel, click outside) asks for confirmation when the form has unsaved edits. Browser Back discards edits.
+- **ITEM-11** New item: kicker "New item", status Idea, the current user in authors. Buttons: "Cancel" and "Create item".
+- **ITEM-12** Not found: the same small dialog for a missing id, a malformed id and an item without access. Text: "This item does not exist, or you do not have access to it." Button: "Close".
+
+### 6.7 Empty states
+
+Pattern: the state, then the next step.
+
+- **EMPTY-1** No items at all: "No items yet" / "Create the first item with “New item” at the top right."
+- **EMPTY-2** Empty column: Idea "No ideas" / "Add one with New item." · Draft "No drafts" / "Move an idea here when you start writing." · Review "Nothing to review" / "Move a draft here when it is ready for an editor." · Published "Nothing published yet" / "Move an item to Review. An editor publishes it."
+- **EMPTY-3** Filters with no results: "No items match these filters" / "Change the filters, or clear them to see all 14 items." + "Clear filters".
+
+### 6.8 Errors and feedback
+
+- **ERR-1** There is one toast type: errors. No success toasts.
+- **ERR-2** Error text: what is wrong, then what to do. Example: "Item not moved" / "The server did not respond. The item went back to Review. Try again."
+- **ERR-3** Access lost while the dialog is open (for example, an editor removed the contributor from authors): show "You no longer have access to this item." and close the dialog.
+- **ERR-4** Concurrent edits: the last save wins.
+- **ERR-5** Expired session: go to `/login?next=<current URL>`.
+
+### 6.9 Live updates
+
+- **LIVE-1** The dashboard updates when other users change items. A small hook asks the server for a cheap "version" (latest `updatedAt` + count) about every 5 seconds and on window focus. It calls `router.refresh()` only when the version changes.
+- **LIVE-2** The hook pauses while the tab is hidden or the dialog has unsaved edits.
+
+## 7. API
+
+- **API-1** The Payload REST API gives the routes: list, create, read, update (`PATCH /api/content-items/:id`, also for status).
+- **API-2** The same rules apply to REST, GraphQL, the Local API and the Admin panel. Collection access returns a `Where` query (row scope). Value rules (PERM-3, PERM-4, PERM-6, AUTH-2) are in a collection `beforeChange` hook that compares the new value with the old document and throws `APIError(…, 403)`.
+
+## 8. Non-goals (later)
+
+- Search, "Create another", activity history, comments.
+- Optimistic locking for concurrent edits.
+- Realtime push (SSE or Postgres LISTEN/NOTIFY) instead of polling.
+- A mobile layout for the board.
+- Notifications.
+
+## 9. Open points
+
+- TODO: confirm the Payload operator for "user is in `authors`" (`in` or `contains`) against the installed version.
