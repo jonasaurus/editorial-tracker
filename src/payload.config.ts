@@ -31,6 +31,9 @@ export default buildConfig({
     },
     // Production (Docker) runs the migrations on connect. Dev and tests use `push`.
     prodMigrations: migrations,
+    // ADR 0012: one transaction per operation. The SQLite adapter has none by default, so a
+    // failed write (for example, an unknown author id) could save a part of the change.
+    transactionOptions: {},
   }),
   plugins: [],
   // ROLE-4: seed the demo data on the first start, when the database has no users.
