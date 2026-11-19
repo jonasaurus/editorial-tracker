@@ -16,20 +16,34 @@ Instructions for coding agents in this repository.
 - shadcn/ui + Tailwind CSS v4. Tokens in the `@theme` block of the frontend `globals.css`.
 - `lucide-react` icons. `@dnd-kit/react` (pinned) for drag and drop.
 - pnpm only.
+- Next.js 16: read the docs for the installed version in `node_modules/next/dist/docs/`. Do not rely on training data.
+- Docker runs the production build (ADR 0010). Production uses migrations, not `push`.
 
 ## Commands
 
-TODO: fill in after the scaffold.
-
 ```bash
-pnpm dev
+pnpm dev              # start the app
+pnpm check            # typecheck, lint, format check, audit, test (the pre-commit hook runs it)
 pnpm test
 pnpm lint
 pnpm typecheck
-pnpm generate:types   # after a change to a Payload collection
+pnpm format           # fix the format
 ```
 
-Before you finish a task: typecheck, lint and test must pass.
+After a change to a Payload collection, run these commands and commit the results:
+
+```bash
+pnpm generate:types
+pnpm generate:importmap
+pnpm payload migrate:create <name>
+```
+
+Before you finish a task: `pnpm check` must pass.
+
+## Dependencies
+
+- A new package version must be 28 days old or older. pnpm enforces this (`pnpm-workspace.yaml`). Do not add `minimumReleaseAgeExclude`.
+- The exceptions are in README "Supply-chain safety". Ask before you use one.
 
 ## Rules for code
 

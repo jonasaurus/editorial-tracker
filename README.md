@@ -25,17 +25,35 @@ A small tool for a newsroom to plan content. Items (articles, videos, podcast ep
 
 ## Run locally
 
-Requirements: Node TODO (see `.nvmrc`), pnpm TODO.
+### With Docker (recommended)
+
+Requirements: Docker.
 
 ```bash
-pnpm install
-cp .env.example .env   # TODO: list the variables
-pnpm dev               # TODO: confirm; seeds the database on first start
+cp .env.example .env    # then set PAYLOAD_SECRET (make one with: openssl rand -hex 32)
+docker compose up --build
 ```
 
 Open http://localhost:3000. The Admin panel is at http://localhost:3000/admin (editors only).
 
-TODO: Docker (`docker compose up`), if added.
+The database is in the Docker volume `data`. To start again with an empty database, run `docker compose down -v`.
+
+### With Node
+
+Requirements: Node 24.22.3 (see `.nvmrc`) and pnpm 10.28.2 (see `packageManager` in `package.json`). `corepack enable` installs the correct pnpm version.
+
+```bash
+nvm use                 # or another tool that reads .nvmrc
+corepack enable
+pnpm install
+cp .env.example .env    # then set PAYLOAD_SECRET
+pnpm dev                # TODO: seeds the database on first start
+```
+
+| Variable | Use |
+|---|---|
+| `DATABASE_URL` | The SQLite file. Default: `file:./editorial-tracker.db`. |
+| `PAYLOAD_SECRET` | The secret for auth tokens. Make one with `openssl rand -hex 32`. |
 
 ### Demo users
 
@@ -51,10 +69,16 @@ The login screen lists these users in development.
 
 | Command | Does |
 |---|---|
-| `pnpm dev` | Start the app |
-| `pnpm test` | Run the tests (TODO) |
-| `pnpm lint` | Lint (TODO) |
-| `pnpm typecheck` | Type check (TODO) |
+| `pnpm dev` | Start the app in development mode |
+| `pnpm build`, `pnpm start` | Build and start the production app |
+| `pnpm check` | Run all checks: typecheck, lint, format check, audit, tests. The pre-commit hook runs it. |
+| `pnpm test` | Run the unit and integration tests (Vitest) |
+| `pnpm typecheck` | Type check |
+| `pnpm lint` | Lint (ESLint) |
+| `pnpm format`, `pnpm format:check` | Format the code, or check the format (Prettier) |
+| `pnpm audit` | Check the dependencies for known advisories (moderate and higher) |
+| `pnpm generate:types` | Generate `src/payload-types.ts` after a change to a collection |
+| `pnpm payload migrate:create <name>` | Create a database migration after a change to a collection |
 | `pnpm seed` | Reset and seed the database (TODO) |
 
 ## How it works
@@ -77,6 +101,30 @@ The full rules are in [docs/spec.md](docs/spec.md). The design rules are in [doc
 
 All screens: [docs/design/](docs/design/).
 
+## Supply-chain safety
+
+A hijacked npm package is usually found and removed within a few days. So this repo waits before it uses a new release.
+
+- **28-day rule.** pnpm installs only package versions that are 28 days old or older (`minimumReleaseAge` in `pnpm-workspace.yaml`). The rule applies on every machine, in CI and in the Docker build. The GitHub Actions follow the same rule.
+- **Exact versions.** The lockfile holds the exact versions. CI and Docker install with `--frozen-lockfile`. Payload and Next.js have exact pins in `package.json`. The GitHub Actions are pinned to a commit SHA.
+- **Install scripts.** Only the packages in `onlyBuiltDependencies` can run install scripts.
+- **Audit.** `pnpm check` runs `pnpm audit` and fails on moderate or higher advisories. Fixes for sub-dependencies are in `overrides`. Unused optional packages are not installed.
+- **Few dependencies.** Unused starter parts are removed. The shadcn CLI is not a runtime dependency (`shadcn eject`).
+
+Exceptions:
+
+- **Node.js.** Node does not come from npm, and the Node project signs its releases. A Node security release fixes known holes, so a wait is the risk, not the release. Thus `.nvmrc` can use a Node security release that is younger than 28 days.
+- **Critical advisories.** If an advisory is critical and can hurt this app, take the fix for that one version, also if it is younger than 28 days. Write down why. Then return to the rule.
+
+Known advisories that `pnpm audit` ignores (`auditConfig.ignoreGhsas`):
+
+| Package | Advisory | Why it does not affect this app | Fix allowed from |
+|---|---|---|---|
+| `next` 16.4.2 | GHSA-mfr8-8qww-v76h, GHSA-vc7v-qv4w-wrv8 | Only with `'use cache'` and root params. The app does not use them. | 2026-12-01 (16.4.5) |
+| `minimatch` 10.2.6 | GHSA-g3hv-75wg-m249 | Dev only (ESLint parser), with our own patterns. | 2026-11-24 (11.0.1) |
+
+TODO: on these dates, upgrade the package and remove its entries from `ignoreGhsas`.
+
 ## Assumptions and trade-offs
 
 - "Own item" means the user created it or is an author.
@@ -94,5 +142,7 @@ All screens: [docs/design/](docs/design/).
 - Realtime push (Server-Sent Events) instead of polling.
 - A mobile layout for the board.
 - Deployment.
+- End-to-end tests (Playwright).
+- A CI check that the migrations match the collections.
 
 TODO: update this list at the end.
