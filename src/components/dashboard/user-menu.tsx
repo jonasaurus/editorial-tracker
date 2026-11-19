@@ -42,7 +42,7 @@ export function UserMenu({ name, role, canAccessAdmin }: Props) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel className="flex items-baseline justify-between gap-3 px-2 py-2.5">
+        <DropdownMenuLabel className="flex items-baseline justify-between gap-3 px-2 py-2">
           <span className="truncate text-sm font-semibold text-foreground">{name}</span>
           <span className="text-xs font-normal text-muted-foreground">{ROLE_LABELS[role]}</span>
         </DropdownMenuLabel>

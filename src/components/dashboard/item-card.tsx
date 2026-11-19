@@ -43,7 +43,7 @@ export function ItemCard({ item, today }: Props) {
       </div>
       <h3
         className={cn(
-          'mt-2 text-sm font-semibold',
+          'mt-1.5 text-sm font-semibold',
           item.archived ? 'text-muted-foreground' : 'text-foreground',
         )}
       >
