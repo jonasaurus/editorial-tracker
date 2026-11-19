@@ -111,7 +111,7 @@ function ItemRow({ item, today, href }: { item: BoardItem; today: string; href: 
             scroll={false}
             data-item-link={item.id}
             className={cn(
-              'font-semibold text-pretty underline-offset-4 outline-none hover:underline',
+              'font-semibold text-balance underline-offset-4 outline-none hover:underline',
               // The focus ring is on the stretched area, inset: the table box clips an outer ring.
               'after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset',
               archived ? 'text-muted-foreground' : 'text-foreground',
