@@ -24,16 +24,18 @@ type Props = {
   newItemHref: string
 }
 
-/** A 1px vertical line between groups of the app bar. */
-function Divider({ className }: { className?: string }) {
-  return <div aria-hidden className={cn('hidden h-5 w-px bg-border md:block', className)} />
-}
+/**
+ * A group of the app bar with a 1px vertical line in the gap before it. The bar clips its edges, so
+ * the line of a group at the start of a row is hidden.
+ */
+const group =
+  'relative before:absolute before:top-1/2 before:-left-3 before:h-5 before:w-px before:-translate-y-1/2 before:bg-border'
 
 /**
  * The dashboard app bar: mark, user menu, counts, filters, view switch, "New item" (§6.2).
  *
- * - `xl` and up: one row, in the order of the design (02, 02c).
- * - `md` to `xl`: two rows. Mark, user menu, counts and "New item", then filters and view switch.
+ * - `md` and up: one row, in the order of the design (02, 02c). A group goes to the next row only
+ *   when it does not fit.
  * - Below `md`: mark, user menu and "New item", then counts, then filters.
  */
 export function AppBar({
@@ -46,29 +48,34 @@ export function AppBar({
   newItemHref,
 }: Props) {
   return (
-    <header className="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-4 py-3 md:px-10 xl:flex-nowrap xl:py-0">
-      <div className="flex items-center gap-3">
-        <Mark className="h-5 w-auto shrink-0 text-foreground" />
-        <UserMenu {...user} />
-      </div>
-      <Divider />
-      <Counts parts={counts} className="order-1 w-full md:order-none md:w-auto" />
-      <div className="order-last flex w-full flex-wrap items-center gap-x-3 gap-y-2 xl:order-none xl:w-auto">
-        <Divider className="md:hidden xl:block" />
-        <div className="flex flex-wrap items-center gap-1">
+    <header className="flex min-h-14 items-center border-b border-border px-4 py-3 md:px-10">
+      {/* `-m-1 p-1`: room for the focus rings inside the clip box. */}
+      <div className="-m-1 flex w-full flex-wrap items-center gap-x-6 gap-y-2 overflow-hidden p-1">
+        <div className="flex items-center gap-3">
+          <Mark className="h-5 w-auto shrink-0 text-foreground" />
+          <UserMenu {...user} />
+        </div>
+        <Counts parts={counts} className={cn(group, 'order-1 w-full md:order-none md:w-auto')} />
+        <div
+          className={cn(
+            group,
+            'order-last flex w-full flex-wrap items-center gap-1 md:order-none md:w-auto',
+          )}
+        >
           <FilterMenu {...typeFilter} />
           {authorFilter && <FilterMenu {...authorFilter} />}
           <ShowArchived {...showArchived} />
         </div>
-        <Divider />
-        <ViewSwitch {...view} />
+        <div className={cn(group, 'max-md:hidden')}>
+          <ViewSwitch {...view} />
+        </div>
+        <Button asChild size="sm" className="ml-auto">
+          <Link href={newItemHref} scroll={false} data-item-link="new">
+            <Plus aria-hidden />
+            New item
+          </Link>
+        </Button>
       </div>
-      <Button asChild size="sm" className="ml-auto">
-        <Link href={newItemHref} scroll={false} data-item-link="new">
-          <Plus aria-hidden />
-          New item
-        </Link>
-      </Button>
     </header>
   )
 }
