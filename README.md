@@ -59,6 +59,7 @@ On the first start, the app seeds the demo data when the database has no users.
 | `DATABASE_URL` | The SQLite file. Default: `file:./editorial-tracker.db`. |
 | `PAYLOAD_SECRET` | The secret for auth tokens. Make one with `openssl rand -hex 32`. |
 | `SEED_ON_START` | `false` turns off the seed on first start. Default: on. |
+| `COOKIE_SECURE` | `true` sends the session cookie only over HTTPS. Set it behind HTTPS. Default: off (Docker uses plain http). |
 
 ### Demo users
 
@@ -68,7 +69,9 @@ On the first start, the app seeds the demo data when the database has no users.
 | Mette Holm | Contributor | mette@example.com | `demo-password` |
 | Sara Nielsen | Contributor | sara@example.com | `demo-password` |
 
-The login screen lists these users in development.
+The login screen lists these users only in development (`pnpm dev`). Select a user to fill the form.
+
+A session lasts 8 hours. After 5 failed logins, an account is locked for 10 minutes.
 
 ### Scripts
 
@@ -89,6 +92,7 @@ The login screen lists these users in development.
 ## How it works
 
 - **Permissions.** A contributor sees and changes only own items (creator or author). Only an editor can publish. Collection access gives the row scope, and a `beforeChange` hook checks values, so the rules also hold for the REST API. See [ADR 0003](docs/adr/0003-permissions-server-side.md).
+- **Login.** A Server Action logs in with Payload and sets the `payload-token` cookie. The app and the Admin panel share the session. Logout ends the session on the server. See [ADR 0011](docs/adr/0011-auth-and-session.md).
 - **Item view.** The item opens in a dialog over the dashboard, with its id in the URL. See [ADR 0004](docs/adr/0004-item-dialog-in-url.md).
 - **Publishing.** Select the Published step, and the button changes to "Publish". Dragging a card to Published shows the same pulse. See [ADR 0009](docs/adr/0009-publish-pulse-magic-ui.md).
 - **Archive.** Archive replaces delete. An archived item keeps its status, is read-only and is hidden unless "Show archived" is on.

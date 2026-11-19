@@ -7,6 +7,8 @@ services:
     environment:
       DATABASE_URL: file:/app/data/editorial-tracker.db
       PAYLOAD_SECRET: ${PAYLOAD_SECRET:?Set PAYLOAD_SECRET in .env (see .env.example)}
+      # Plain http on localhost. Set to true behind HTTPS.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     volumes:
       - data:/app/data
 
