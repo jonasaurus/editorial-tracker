@@ -5,5 +5,4 @@ minimumReleaseAge: 40320
 # Only these packages can run install scripts.
 onlyBuiltDependencies:
   - esbuild
-  - sharp
   - unrs-resolver

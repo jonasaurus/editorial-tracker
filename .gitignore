@@ -44,5 +44,6 @@ pnpm-debug.log*
 CLAUDE.local.md
 
 # Misc
+*.pem
 *.tsbuildinfo
 .vercel
