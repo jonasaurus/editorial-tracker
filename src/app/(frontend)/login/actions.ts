@@ -2,7 +2,7 @@
 
 import config from '@payload-config'
 import { cookies, headers } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { redirect, RedirectType } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import { authenticate, revokeSession } from '@/lib/auth/authenticate'
@@ -45,5 +45,6 @@ export async function logout(): Promise<void> {
     path: '/',
     domain: payload.collections.users.config.auth.cookies.domain,
   })
-  redirect('/login')
+  // Replace: after logout, Back does not open the dashboard again.
+  redirect('/login', RedirectType.replace)
 }

@@ -8,7 +8,7 @@ const SESSION_COOKIE = 'payload-token'
 
 /**
  * An optimistic check (LOGIN-3, ERR-5): a page request without a session cookie goes to the
- * login page. The real check is `getUser` in the page, because a cookie can be expired or revoked.
+ * login page. The real check is `getSession` in the page, because a cookie can be expired or revoked.
  *
  * - The proxy never sends a user away from `/login`. With an expired cookie, that would loop.
  * - Only GET and HEAD. A Server Action is a POST to the page URL, and a 307 redirect keeps the
