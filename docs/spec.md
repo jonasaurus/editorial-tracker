@@ -100,7 +100,7 @@ The dashboard is the only page. One app bar holds: the mark, the user menu, the 
 ### 6.4 Drag and drop (board, desktop only)
 
 - **DND-1** Drag a card to another column to change its status. The same rules as the dialog apply, and the server checks them.
-- **DND-2** A column where the user cannot drop is marked as not allowed (for a contributor: Published).
+- **DND-2** A column where the user cannot drop is marked as not allowed (for a contributor: Published). A drop there does nothing. A drop on the column of the item does nothing.
 - **DND-3** During a drag over Published, the column shows the publish pulse (the same animation as the armed Publish button).
 - **DND-4** If the server rejects the change, the card goes back to its old column, and an error toast shows.
 - **DND-5** Keyboard and screen-reader users can move a card (the library gives this).
