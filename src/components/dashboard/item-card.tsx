@@ -7,6 +7,7 @@ import type { ReactNode } from 'react'
 
 import { DeadlineText } from '@/components/deadline-text'
 import type { BoardItem } from '@/lib/dashboard/board'
+import { formatPublished } from '@/lib/item/meta'
 import { isItemStatus, type ItemStatus, TYPE_LABELS } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
@@ -54,7 +55,7 @@ function cardClass(item: BoardItem, ghost = false): string {
   )
 }
 
-/** The content of a card: type, deadline, title, people (BOARD-3). */
+/** The content of a card: type, deadline or published date, title, people (BOARD-3). */
 function ItemCardBody({ item, today, title }: Omit<Props, 'href'> & { title: ReactNode }) {
   const people = byline(item.authorNames, item.creatorName)
 
@@ -70,7 +71,14 @@ function ItemCardBody({ item, today, title }: Omit<Props, 'href'> & { title: Rea
             </span>
           )}
         </span>
-        <DeadlineText item={item} today={today} variant="short" />
+        {/* BOARD-3: a published card shows the published date (the Published column sorts by it). */}
+        {item.status === 'published' && item.publishedAt ? (
+          <time dateTime={item.publishedAt} className="text-muted-foreground">
+            {formatPublished(item.publishedAt, today)}
+          </time>
+        ) : (
+          <DeadlineText item={item} today={today} variant="short" />
+        )}
       </div>
       <h3
         className={cn(

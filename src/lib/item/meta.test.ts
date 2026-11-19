@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatItemMeta } from './meta'
+import { formatItemMeta, formatPublished } from './meta'
 
 const TODAY = '2026-11-19'
 
@@ -120,5 +120,23 @@ describe('formatItemMeta', () => {
 
   it('gives a null creator name when the creator is gone', () => {
     expect(formatItemMeta({ ...ITEM, creatorName: null }, TODAY).creatorName).toBeNull()
+  })
+})
+
+describe('formatPublished (BOARD-3)', () => {
+  const today = '2026-11-19'
+
+  it('says today for a Copenhagen date of today', () => {
+    expect(formatPublished('2026-11-19T08:00:00.000Z', today)).toBe('Published today')
+  })
+
+  it('uses the Copenhagen date, not the UTC date', () => {
+    // 23:30 UTC on 18 Nov is 00:30 on 19 Nov in Copenhagen.
+    expect(formatPublished('2026-11-18T23:30:00.000Z', today)).toBe('Published today')
+    expect(formatPublished('2026-11-18T22:30:00.000Z', today)).toBe('Published 18 Nov')
+  })
+
+  it('gives the short date for another day', () => {
+    expect(formatPublished('2026-10-26T09:00:00.000Z', today)).toBe('Published 26 Oct')
   })
 })

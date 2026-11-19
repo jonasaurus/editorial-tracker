@@ -20,6 +20,11 @@ function dateWord(iso: string, today: string): string {
   return day === today ? 'today' : formatPlainDate(day, today)
 }
 
+/** "Published today" or "Published 3 Nov": the Copenhagen date of `publishedAt` (BOARD-3, ITEM-3). */
+export function formatPublished(publishedAt: string, today: string): string {
+  return `Published ${dateWord(publishedAt, today)}`
+}
+
 /** The date word and the `HH:mm` time in Copenhagen, for example "today 09:12". */
 function dateTime(iso: string, today: string): string {
   return `${dateWord(iso, today)} ${toCopenhagenTime(iso)}`
@@ -52,7 +57,7 @@ function formatEvent(
   // MODEL-2: `publishedAt` stays after unpublish, so the status decides.
   if (item.status === 'published' && item.publishedAt) {
     return [
-      { text: `Published ${dateWord(item.publishedAt, today)}`, strong: true },
+      { text: formatPublished(item.publishedAt, today), strong: true },
       { text: ` · updated ${dateTime(item.updatedAt, today)}`, strong: false },
     ]
   }
