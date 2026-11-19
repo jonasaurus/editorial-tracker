@@ -15,7 +15,15 @@ let second: User
 let noItems: User
 let onlyArchived: User
 
-const DEFAULTS: DashboardParams = { view: 'board', type: null, author: null, archived: false }
+const DEFAULTS: DashboardParams = {
+  view: 'board',
+  type: null,
+  author: null,
+  archived: false,
+  status: null,
+  sort: 'deadline',
+  dir: 'asc',
+}
 
 type ItemInput = Pick<ContentItem, 'title' | 'type'> &
   Partial<Pick<ContentItem, 'status' | 'archived'>> & { createdBy: User; authors: User[] }
