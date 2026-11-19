@@ -1,0 +1,9 @@
+# Supply-chain safety: install only package versions that are at least
+# 28 days old (40320 minutes). See README "Supply-chain safety".
+minimumReleaseAge: 40320
+
+# Only these packages can run install scripts.
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver
