@@ -22,12 +22,14 @@ type Props = {
   column: Column
   /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
   today: string
+  /** The URL that opens an item in the dialog (BOARD-4, ITEM-1). */
+  itemHref: (id: number) => string
   /** Show EMPTY-2 when the column has no items. False when the board shows one empty box. */
   showEmptyState?: boolean
 }
 
 /** One status column: heading, count, then the items (BOARD-1, BOARD-2, EMPTY-2). */
-export function BoardColumn({ column, today, showEmptyState = true }: Props) {
+export function BoardColumn({ column, today, itemHref, showEmptyState = true }: Props) {
   const headingId = `column-${column.status}`
   const { count, archived } = formatColumnCount(column.count, column.archivedCount)
 
@@ -52,7 +54,7 @@ export function BoardColumn({ column, today, showEmptyState = true }: Props) {
         <ul className="mt-3 flex flex-col gap-2">
           {column.items.map((item) => (
             <li key={item.id}>
-              <ItemCard item={item} today={today} />
+              <ItemCard item={item} today={today} href={itemHref(item.id)} />
             </li>
           ))}
         </ul>

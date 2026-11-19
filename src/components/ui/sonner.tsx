@@ -1,14 +1,12 @@
 'use client'
 
+import { CircleAlert } from 'lucide-react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
-import {
-  CircleCheckIcon,
-  InfoIcon,
-  TriangleAlertIcon,
-  OctagonXIcon,
-  Loader2Icon,
-} from 'lucide-react'
 
+/**
+ * ERR-1: the only toast type is an error (design-system §7): ink background, 3px red left rule,
+ * `CircleAlert` icon, title + text.
+ */
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
@@ -16,23 +14,17 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="light"
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
+        error: <CircleAlert aria-hidden className="size-4 text-destructive" />,
       }}
-      style={
-        {
-          '--normal-bg': 'var(--popover)',
-          '--normal-text': 'var(--popover-foreground)',
-          '--normal-border': 'var(--border)',
-          '--border-radius': 'var(--radius)',
-        } as React.CSSProperties
-      }
       toastOptions={{
+        unstyled: true,
         classNames: {
-          toast: 'cn-toast',
+          toast:
+            'flex w-full items-start gap-3 border-l-3 border-destructive bg-foreground px-4 py-3.5 text-primary-foreground shadow-lg',
+          icon: 'mt-0.5 flex size-4 shrink-0 items-center justify-center',
+          content: 'flex min-w-0 flex-col gap-1',
+          title: 'text-sm font-semibold',
+          description: 'text-sm text-primary-foreground/80',
         },
       }}
       {...props}

@@ -37,6 +37,8 @@ type Props = {
   tabs: ComponentProps<typeof StatusTabs>['tabs']
   /** The URL of each column header (LIST-3). */
   sortHref: (column: ListSort) => string
+  /** The URL that opens an item in the dialog (ITEM-1). */
+  itemHref: (id: number) => string
   empty: ListEmpty
   /** All active items, without the filters (EMPTY-3). */
   total: number
@@ -54,6 +56,7 @@ export function ListView({
   dir,
   tabs,
   sortHref,
+  itemHref,
   empty,
   total,
   clearHref,
@@ -69,6 +72,7 @@ export function ListView({
         sort={sort}
         dir={dir}
         sortHref={sortHref}
+        itemHref={itemHref}
       />
 
       {/* The empty box is outside the table, full width under the header line (design 02a-empty-list). */}

@@ -37,6 +37,8 @@ type Props = {
   dir: SortDir
   /** The URL of each column header: the sort after a click on it (LIST-3). */
   sortHref: (column: ListSort) => string
+  /** The URL that opens an item in the dialog (ITEM-1). */
+  itemHref: (id: number) => string
   className?: string
 }
 
@@ -44,7 +46,7 @@ type Props = {
  * The items as a table (LIST-2, LIST-3, LIST-4, ADR 0005). Each header is a link that sorts on
  * the server. Archived rows are greyed and show an "Archived" label.
  */
-export function ItemTable({ rows, today, sort, dir, sortHref, className }: Props) {
+export function ItemTable({ rows, today, sort, dir, sortHref, itemHref, className }: Props) {
   const SortIcon = dir === 'asc' ? ArrowUp : ArrowDown
 
   return (
@@ -78,15 +80,15 @@ export function ItemTable({ rows, today, sort, dir, sortHref, className }: Props
       </TableHeader>
       <TableBody className="[&_tr:last-child]:border-b">
         {rows.map((item) => (
-          <ItemRow key={item.id} item={item} today={today} />
+          <ItemRow key={item.id} item={item} today={today} href={itemHref(item.id)} />
         ))}
       </TableBody>
     </Table>
   )
 }
 
-/** One item. The rows are not clickable yet, so they have no hover fill. */
-function ItemRow({ item, today }: { item: BoardItem; today: string }) {
+/** One item. Only the title is a link, so the row has no hover fill (ADR 0005). */
+function ItemRow({ item, today, href }: { item: BoardItem; today: string; href: string }) {
   const { archived } = item
   const cell = 'h-12 px-3 py-2'
 
@@ -94,11 +96,17 @@ function ItemRow({ item, today }: { item: BoardItem; today: string }) {
     <TableRow className="border-border hover:bg-transparent">
       <TableCell className={cn(cell, 'whitespace-normal')}>
         <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <span
-            className={cn('font-semibold', archived ? 'text-muted-foreground' : 'text-foreground')}
+          <Link
+            href={href}
+            scroll={false}
+            data-item-link={item.id}
+            className={cn(
+              'font-semibold underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50',
+              archived ? 'text-muted-foreground' : 'text-foreground',
+            )}
           >
             {item.title}
-          </span>
+          </Link>
           {/* LIST-4: a label, so the archived state is not colour only (same as the item card). */}
           {archived && (
             <span className="inline-flex items-center gap-1 rounded-full border border-input px-1.5 text-xs leading-4 text-muted-foreground">

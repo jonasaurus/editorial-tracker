@@ -5,6 +5,7 @@ import { AppBar } from '@/components/dashboard/app-bar'
 import { Board, type BoardEmpty } from '@/components/dashboard/board'
 import type { FilterOption } from '@/components/dashboard/filter-menu'
 import { ListView } from '@/components/dashboard/list-view'
+import { ItemDialog } from '@/components/item/item-dialog'
 import { toPathWithQuery } from '@/lib/auth/next-path'
 import { requireSession } from '@/lib/auth/session'
 import { buildBoard, formatCounts } from '@/lib/dashboard/board'
@@ -19,6 +20,7 @@ import {
 } from '@/lib/dashboard/params'
 import { getDashboardData } from '@/lib/dashboard/query'
 import { todayInCopenhagen } from '@/lib/deadline'
+import { getItemDialogData } from '@/lib/item/detail'
 import { TYPE_LABELS, TYPES } from '@/lib/items'
 
 type Props = {
@@ -39,7 +41,14 @@ export default async function DashboardPage({ searchParams }: Props) {
   // DL-1: the server decides today, and passes it down.
   const today = todayInCopenhagen()
   const board = buildBoard(items, today)
-  const href = (change: Parameters<typeof dashboardHref>[1]) => dashboardHref(params, change)
+  // ITEM-1: the dashboard links do not include `item`, so a link never opens a dialog again.
+  const base = { ...params, item: null }
+  const href = (change: Parameters<typeof dashboardHref>[1]) => dashboardHref(base, change)
+  const itemHref = (id: number) => href({ item: { kind: 'id', id } })
+  const newItemHref = href({ item: { kind: 'new' } })
+  // ITEM-2: close goes back to the dashboard URL with the same filters.
+  const closeHref = href({})
+  const dialog = params.item ? await getItemDialogData(payload, user, params.item) : null
   // LIST-3: a header link sets the sort after a click on that column.
   const sortHref = (column: ListSort) => href(nextSort(params, column))
 
@@ -75,6 +84,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       dir={params.dir}
       tabs={list.tabs.map((tab) => ({ tab, href: href({ status: tab.status }) }))}
       sortHref={sortHref}
+      itemHref={itemHref}
       empty={getListEmpty({
         hasAnyItem,
         filtered: hasFilters(params),
@@ -114,18 +124,35 @@ export default async function DashboardPage({ searchParams }: Props) {
           boardHref: href({ view: 'board' }),
           listHref: href({ view: 'list' }),
         }}
+        newItemHref={newItemHref}
       />
       <main>
         {params.view === 'board' ? (
           <>
             {/* LIST-5: below `md` the list is the only view. */}
-            <Board className="hidden md:block" board={board} today={today} empty={empty} />
+            <Board
+              className="hidden md:block"
+              board={board}
+              today={today}
+              empty={empty}
+              itemHref={itemHref}
+            />
             {listView('md:hidden')}
           </>
         ) : (
           listView()
         )}
       </main>
+      {/* Once, after `main`: on `view=board` both the board and the list render. */}
+      {params.item && dialog && (
+        <ItemDialog
+          key={params.item.kind === 'id' ? `id-${params.item.id}` : params.item.kind}
+          state={dialog}
+          closeHref={closeHref}
+          today={today}
+          user={{ id: user.id, role: user.role }}
+        />
+      )}
     </>
   )
 }

@@ -16,11 +16,13 @@ type Props = {
   /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
   today: string
   empty: BoardEmpty
+  /** The URL that opens an item in the dialog (BOARD-4, ITEM-1). */
+  itemHref: (id: number) => string
   className?: string
 }
 
 /** The board view: four status columns (BOARD-1). Stacked below `md`. */
-export function Board({ board, today, empty, className }: Props) {
+export function Board({ board, today, empty, itemHref, className }: Props) {
   return (
     <div className={cn('px-4 pt-6 pb-10 md:px-10', className)}>
       <div className="grid gap-x-4 gap-y-8 md:grid-cols-4">
@@ -29,6 +31,7 @@ export function Board({ board, today, empty, className }: Props) {
             key={column.status}
             column={column}
             today={today}
+            itemHref={itemHref}
             showEmptyState={empty.kind === 'none'}
           />
         ))}
