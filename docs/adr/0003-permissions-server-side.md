@@ -7,7 +7,7 @@ Contributors may see and change only their own items, and only editors may publi
 ## Decision
 
 - Row scope: collection `access.read` and `access.update` return a `Where` query (own items; for contributors also "not published").
-- Value rules: a collection `beforeChange` hook compares the new data with `originalDoc` and throws `APIError(message, 403)`. It covers: publish and unpublish (editor only), status changes on archived items, and a contributor who removes themselves from `authors`.
+- Value rules: a collection `beforeChange` hook compares the new data with `originalDoc` and throws `APIError(message, 403)`. It covers: publish and unpublish (editor only), every change to an archived item except unarchive, and a contributor who removes themselves from `authors`.
 - `role` field: update access for editors only. `access.admin`: editors only.
 - Every Local API call from the app passes `user` and `overrideAccess: false`.
 - Integration tests cover each rule against the Local API and the REST API.

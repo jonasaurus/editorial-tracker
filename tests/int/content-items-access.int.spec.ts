@@ -28,7 +28,7 @@ beforeAll(async () => {
   payload = await getPayload({ config })
 })
 
-describe('authors query operator (spec §9)', () => {
+describe('API-3 authors query operator', () => {
   let item: ContentItem
   let second: Actor
 

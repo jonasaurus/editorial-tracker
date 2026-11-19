@@ -155,6 +155,7 @@ Pattern: the state, then the next step.
 
 - **API-1** The Payload REST API gives the routes: list, create, read, update (`PATCH /api/content-items/:id`, also for status).
 - **API-2** The same rules apply to REST, GraphQL, the Local API and the Admin panel. Collection access returns a `Where` query (row scope). Value rules (PERM-3, PERM-4, PERM-6, AUTH-2) are in a collection `beforeChange` hook that compares the new value with the old document and throws `APIError(…, 403)`.
+- **API-3** The row scope for "own item" is `createdBy equals <user>` OR `authors equals <user>`. On `authors` (many users), `equals` matches when one of the authors is the user. `in` and `contains` give the same result. Do not use `not_equals` or `not_in` on `authors`: they compare each author on its own, so an item with 2 authors also matches.
 
 ## 8. Non-goals (later)
 
@@ -166,4 +167,4 @@ Pattern: the state, then the next step.
 
 ## 9. Open points
 
-- TODO: confirm the Payload operator for "user is in `authors`" (`in` or `contains`) against the installed version.
+None.
