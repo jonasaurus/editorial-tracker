@@ -155,6 +155,9 @@ export interface ContentItem {
   status: 'idea' | 'draft' | 'review' | 'published';
   type: 'article' | 'video' | 'podcast' | 'newsletter';
   authors?: (number | User)[] | null;
+  /**
+   * Format: YYYY-MM-DD. Empty: no deadline.
+   */
   deadline?: string | null;
   archived?: boolean | null;
   createdBy?: (number | null) | User;

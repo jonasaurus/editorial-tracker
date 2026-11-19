@@ -2,23 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { User } from '@/payload-types'
 
-import { authorIds, sameIds, toDay } from './rules'
-
-describe('toDay', () => {
-  it('keeps a plain date', () => {
-    expect(toDay('2026-11-20')).toBe('2026-11-20')
-  })
-
-  it('cuts the time from an ISO timestamp', () => {
-    expect(toDay('2026-11-20T00:00:00.000Z')).toBe('2026-11-20')
-  })
-
-  it('gives null for no deadline', () => {
-    expect(toDay(null)).toBeNull()
-    expect(toDay(undefined)).toBeNull()
-    expect(toDay('')).toBeNull()
-  })
-})
+import { authorIds, sameIds } from './rules'
 
 describe('authorIds', () => {
   it('reads ids and populated users', () => {

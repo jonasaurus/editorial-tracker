@@ -336,4 +336,50 @@ describe.each(transports)('Content items: value rules ($name)', (t) => {
       expect(ids(result.doc?.authors)).toEqual([])
     })
   })
+
+  describe('deadline (ADR 0007)', () => {
+    /** The stored value, read without access control. */
+    const storedDeadline = async (id: number) =>
+      (await payload.findByID({ collection: 'content-items', id })).deadline
+
+    it('stores a plain date as YYYY-MM-DD on create', async () => {
+      const result = await t.create(contributor, 'content-items', {
+        title: 'Plain date',
+        type: 'article',
+        deadline: '2026-11-20',
+      })
+
+      expect(result.doc?.deadline).toBe('2026-11-20')
+      expect(await storedDeadline(result.doc?.id ?? 0)).toBe('2026-11-20')
+    })
+
+    it.each([
+      ['a timestamp', '2026-12-24T00:00:00.000Z'],
+      ['a day that does not exist', '2026-02-30'],
+    ])('rejects %s', async (_name, deadline) => {
+      const item = await ownItem({ deadline: '2026-11-30' })
+
+      const result = await t.update(contributor, 'content-items', item.id, { deadline })
+
+      expect(result.status).toBe(400)
+      expect(await storedDeadline(item.id)).toBe('2026-11-30')
+    })
+
+    it('stores an empty deadline as no deadline', async () => {
+      const item = await ownItem({ deadline: '2026-11-30' })
+
+      const result = await t.update(contributor, 'content-items', item.id, { deadline: '' })
+
+      expect(result.status).toBe(200)
+      expect(await storedDeadline(item.id)).toBeNull()
+    })
+
+    it('keeps YYYY-MM-DD when an update does not send the deadline', async () => {
+      const item = await ownItem({ deadline: '2026-11-30' })
+
+      await t.update(contributor, 'content-items', item.id, { title: 'New title' })
+
+      expect(await storedDeadline(item.id)).toBe('2026-11-30')
+    })
+  })
 })

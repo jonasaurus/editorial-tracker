@@ -9,6 +9,7 @@ import {
 import type { ContentItem } from '@/payload-types'
 
 import { isEditor, isEditorUser, isLoggedIn } from '../../access'
+import { isPlainDate } from '../../lib/deadline'
 import { checkItemChange, type RuleId } from './rules'
 
 /**
@@ -118,11 +119,18 @@ export const ContentItems: CollectionConfig = {
       hasMany: true,
     },
     {
-      // A plain date, no time and no time zone (ADR 0007).
+      // A plain date, no time and no time zone (ADR 0007). A `text` field, because
+      // the `date` field type turns values into ISO timestamps.
       name: 'deadline',
-      type: 'date',
+      type: 'text',
       admin: {
-        date: { pickerAppearance: 'dayOnly' },
+        description: 'Format: YYYY-MM-DD. Empty: no deadline.',
+      },
+      validate: (value: string | null | undefined) =>
+        !value || isPlainDate(value) || 'Use a real date in the format YYYY-MM-DD.',
+      hooks: {
+        // An empty field means no deadline.
+        beforeChange: [({ value }) => (value === '' ? null : value)],
       },
     },
     {

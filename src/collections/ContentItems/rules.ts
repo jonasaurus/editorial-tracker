@@ -20,20 +20,13 @@ export const sameIds = (a: number[], b: number[]): boolean => {
   return setA.size === setB.size && [...setA].every((id) => setB.has(id))
 }
 
-/**
- * The calendar day of a deadline (`YYYY-MM-DD`), or null.
- * A client can send `2026-11-20`, and the database can give `2026-11-20T00:00:00.000Z`.
- */
-export const toDay = (deadline: string | null | undefined): string | null =>
-  deadline ? deadline.slice(0, 10) : null
-
 /** True when a field that a user edits has a new value. PERM-6 uses this. */
 function editedFieldsChanged(original: ContentItem, next: Partial<ContentItem>): boolean {
   return (
     next.title !== original.title ||
     next.status !== original.status ||
     next.type !== original.type ||
-    toDay(next.deadline) !== toDay(original.deadline) ||
+    (next.deadline ?? null) !== (original.deadline ?? null) ||
     !sameIds(authorIds(next.authors), authorIds(original.authors))
   )
 }
