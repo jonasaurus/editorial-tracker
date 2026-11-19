@@ -94,6 +94,14 @@ function describe(operation: DragEndEvent['operation']) {
   return { title: data.title, from: data.status, to: isItemStatus(target) ? target : null }
 }
 
+/**
+ * True when the drag ends without a drop. During a keyboard drag, the library also ends the drag
+ * when the window resizes, but not as a cancel. A resize must never move (or publish) an item.
+ */
+function isCancel({ canceled, nativeEvent }: Pick<DragEndEvent, 'canceled' | 'nativeEvent'>) {
+  return canceled || nativeEvent?.type === 'resize'
+}
+
 /** DND-5: the screen-reader texts. A column where the user cannot drop counts as no column. */
 function getAccessibility(role: Role) {
   const allowed = (from: ItemStatus, to: ItemStatus | null) =>
@@ -112,10 +120,11 @@ function getAccessibility(role: Role) {
         if (!move || move.to === move.from) return undefined
         return announceMove('over', move.title, move.from, allowed(move.from, move.to))
       },
-      dragend({ operation, canceled }) {
+      dragend(event) {
+        const { operation } = event
         const move = describe(operation)
         if (!move) return undefined
-        if (canceled) return announceMove('cancel', move.title, move.from, null)
+        if (isCancel(event)) return announceMove('cancel', move.title, move.from, null)
         return announceMove('end', move.title, move.from, allowed(move.from, move.to))
       },
     },
@@ -191,12 +200,13 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
   useEffect(() => endDrag, [endDrag])
 
   const onDragEnd = useCallback(
-    ({ operation, canceled }: DragEndEvent) => {
+    (event: DragEndEvent) => {
+      const { operation } = event
       endDrag()
       const id = operation.source?.id
       const move = describe(operation)
       // DND-2: no request for a cancel, the same column or a column the user cannot drop on.
-      if (canceled || typeof id !== 'number' || !move || move.to === null) return
+      if (isCancel(event) || typeof id !== 'number' || !move || move.to === null) return
       if (!canDropOn(role, { status: move.from }, move.to)) return
       const { from, to } = move
       focusId.current = id
