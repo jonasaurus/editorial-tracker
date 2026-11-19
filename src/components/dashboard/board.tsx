@@ -1,6 +1,7 @@
-import { BoardColumn } from '@/components/dashboard/board-column'
+import { BoardDnd } from '@/components/dashboard/board-dnd'
 import { NoItemsState, NoResultsState } from '@/components/dashboard/empty-state'
-import type { Board as BoardData } from '@/lib/dashboard/board'
+import type { BoardItem } from '@/lib/dashboard/board'
+import type { Role } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
 /**
@@ -12,30 +13,32 @@ export type BoardEmpty =
   { kind: 'none' } | { kind: 'no-items' } | { kind: 'no-results'; total: number; clearHref: string }
 
 type Props = {
-  board: BoardData
+  /** The items on the board. The client groups them into columns (BOARD-1). */
+  items: BoardItem[]
   /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
   today: string
   empty: BoardEmpty
+  /** The role of the user: which items move and where (DND-1, DND-2). */
+  role: Role
   /** The URL that opens an item in the dialog (BOARD-4, ITEM-1). */
   itemHref: (id: number) => string
   className?: string
 }
 
 /** The board view: four status columns (BOARD-1). Stacked below `md`. */
-export function Board({ board, today, empty, itemHref, className }: Props) {
+export function Board({ items, today, empty, role, itemHref, className }: Props) {
+  // A function cannot go to a Client Component: pass the URLs.
+  const hrefs = Object.fromEntries(items.map((item) => [item.id, itemHref(item.id)]))
+
   return (
     <div className={cn('px-4 pt-6 pb-10 md:px-10', className)}>
-      <div className="grid gap-x-4 gap-y-8 md:grid-cols-4">
-        {board.columns.map((column) => (
-          <BoardColumn
-            key={column.status}
-            column={column}
-            today={today}
-            itemHref={itemHref}
-            showEmptyState={empty.kind === 'none'}
-          />
-        ))}
-      </div>
+      <BoardDnd
+        items={items}
+        today={today}
+        role={role}
+        hrefs={hrefs}
+        showEmptyState={empty.kind === 'none'}
+      />
 
       {empty.kind === 'no-items' && <NoItemsState className="mt-3" />}
 

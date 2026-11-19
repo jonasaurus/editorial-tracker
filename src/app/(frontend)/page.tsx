@@ -132,9 +132,10 @@ export default async function DashboardPage({ searchParams }: Props) {
             {/* LIST-5: below `md` the list is the only view. */}
             <Board
               className="hidden md:block"
-              board={board}
+              items={items}
               today={today}
               empty={empty}
+              role={user.role}
               itemHref={itemHref}
             />
             {listView('md:hidden')}
