@@ -83,12 +83,12 @@ const DOT: KickerPart = { text: ' · ', strong: false }
 const ARROW: KickerPart = { text: ' → ', strong: false }
 
 /**
- * The kicker line (designs 03, 03a–03d). `item` null: a new item.
+ * The kicker line (design-system §6 "Kicker"). `item` null: a new item.
  * Each separator (" · ", " → ") is a part of its own, not strong.
  * - New: "New item".
  * - Edit: "Article · **Review**", and "… → **Published**" when the selected status is another.
  * - Archived: "Article · Review · **Archived**". The fields are read-only, so the status
- *   does not change. Only "Archived" is strong (design 03c).
+ *   does not change. Only "Archived" is strong.
  */
 export function getKicker(item: ItemDetail | null, selected: ItemStatus): KickerPart[] {
   if (!item) return [{ text: 'New item', strong: false }]

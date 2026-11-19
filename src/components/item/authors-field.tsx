@@ -29,7 +29,7 @@ type Props = {
 }
 
 /**
- * The authors field (ITEM-3, design 03f): chips and a checkable menu of all users.
+ * The authors field (ITEM-3, design-system §10): chips and a checkable menu of all users.
  * New authors are added at the end. The menu stays open after each change.
  */
 export function AuthorsField({
@@ -45,7 +45,7 @@ export function AuthorsField({
 }: Props) {
   const field = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
-  // The menu opens under the whole field, not under the trigger (design 03f).
+  // The menu opens under the whole field, not under the trigger (design-system §10).
   const [offset, setOffset] = useState({ side: 4, align: 0 })
 
   function place(open: boolean) {
@@ -118,7 +118,7 @@ export function AuthorsField({
                   onCheckedChange={(checked) => toggle(user.id, checked === true)}
                   // The menu stays open after each change (design-system §10).
                   onSelect={(event) => event.preventDefault()}
-                  // The check is on the left (design 03f).
+                  // The check is on the left (design-system §10).
                   className="py-1.5 pr-2 pl-8 [&>[data-slot=dropdown-menu-checkbox-item-indicator]]:right-auto [&>[data-slot=dropdown-menu-checkbox-item-indicator]]:left-2"
                 >
                   <span className="truncate">{user.name}</span>

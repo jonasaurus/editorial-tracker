@@ -5,7 +5,7 @@ Instructions for coding agents in this repository.
 ## Source of truth
 
 - Behaviour: `docs/spec.md`. Rules have ids (for example `PERM-3`). Refer to them in tests and commit messages.
-- Design: `docs/design-system.md` and the screens in `docs/design/`.
+- Design: `docs/design-system.md`.
 - Decisions: `docs/adr/`. Add an ADR for a new decision that changes the architecture.
 - If the code and the docs do not agree, stop and ask. Do not change a rule silently.
 

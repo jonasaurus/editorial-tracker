@@ -7,7 +7,7 @@ import { CloseButton } from '@/components/item/close-button'
 import { Button } from '@/components/ui/button'
 
 /**
- * ITEM-12 (design 03e): one message for a missing id, a malformed id and an item without
+ * ITEM-12: one message for a missing id, a malformed id and an item without
  * access. The same text for all three, so the dialog does not tell which items exist.
  */
 export function NotFoundContent({ onClose }: { onClose: () => void }) {

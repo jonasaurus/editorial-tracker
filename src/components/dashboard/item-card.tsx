@@ -45,7 +45,10 @@ function byline(authorNames: string[], creatorName: string | null): string | nul
 /** The link classes. BOARD-4: the link stretches over the whole card. */
 const linkClass = 'outline-none after:absolute after:inset-0'
 
-/** The frame of a card. `ghost`: the item stays in its column during a drag (design 02d). */
+/**
+ * The frame of a card. `ghost`: the item stays in its column during a drag
+ * (design-system §4 "Drop targets").
+ */
 function cardClass(item: BoardItem, ghost = false): string {
   return cn(
     // design-system §2: one card height. 112px = 2 × 14px padding + 2 × 1px border + 82px content.
@@ -161,7 +164,10 @@ export function DraggableItemCard({ item, today, href }: Props) {
   )
 }
 
-/** The copy of an item that follows the pointer during a drag (design 02d). Not interactive. */
+/**
+ * The copy of an item that follows the pointer during a drag (design-system §4 "Drop targets").
+ * Not interactive.
+ */
 export function ItemCardOverlay({ item, today }: Omit<Props, 'href'>) {
   return (
     <article aria-hidden inert className={cn(cardClass(item), '-rotate-2 shadow-lg')}>

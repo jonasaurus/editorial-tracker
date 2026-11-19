@@ -82,7 +82,8 @@ export function BoardColumn({ column, today, role, hrefs, showEmptyState = true 
       aria-labelledby={headingId}
       data-board-column={column.status}
       className={cn(
-        // The highlight sits outside the column box, so the layout does not move (design 02d).
+        // The highlight sits outside the column box, so the layout does not move
+        // (design-system §4 "Drop targets").
         '-m-3 min-w-0 border border-transparent p-[11px]',
         slot === 'publish' && 'animate-publish-pulse border-publish/50 bg-publish/10',
         // The slot can be below the fold in a long column, so the column is marked too.
@@ -105,7 +106,7 @@ export function BoardColumn({ column, today, role, hrefs, showEmptyState = true 
         </h2>
         <p className="text-2xl font-light whitespace-nowrap text-muted-foreground">
           {count}
-          {/* "3 · 1 archived": the archived part is smaller (design 02c). */}
+          {/* "3 · 1 archived": the archived part is smaller (design-system §6). */}
           {archived && <span className="text-sm font-normal"> · {archived}</span>}
         </p>
       </div>
@@ -149,7 +150,7 @@ function DropPlace({ slot, status }: { slot: 'move' | 'publish'; status: ItemSta
   )
 }
 
-/** The dashed drop slot during a drag (components.png "Drop to publish"). */
+/** The dashed drop slot during a drag (design-system §4 "Drop targets"). */
 function DropSlot({
   slot,
   status,

@@ -34,7 +34,7 @@ const group =
 /**
  * The dashboard app bar: mark, user menu, counts, filters, view switch, "New item" (§6.2).
  *
- * - `md` and up: one row, in the order of the design (02, 02c). A group goes to the next row only
+ * - `md` and up: one row, in the order of design-system §11. A group goes to the next row only
  *   when it does not fit.
  * - Below `md`: mark, user menu and "New item", then counts, then filters.
  */

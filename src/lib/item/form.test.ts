@@ -142,12 +142,12 @@ describe('isArmed', () => {
 })
 
 describe('getKicker', () => {
-  it('gives "New item" for a new item (design 03)', () => {
+  it('gives "New item" for a new item', () => {
     expect(getKicker(null, 'idea')).toEqual([{ text: 'New item', strong: false }])
     expect(getKicker(null, 'draft')).toEqual([{ text: 'New item', strong: false }])
   })
 
-  it('gives the type and the saved status (design 03b)', () => {
+  it('gives the type and the saved status', () => {
     expect(getKicker(ITEM, 'review')).toEqual([
       { text: 'Article', strong: false },
       { text: ' · ', strong: false },
@@ -155,7 +155,7 @@ describe('getKicker', () => {
     ])
   })
 
-  it('gives "Article · Published" for a published item (design 03d)', () => {
+  it('gives "Article · Published" for a published item', () => {
     expect(getKicker({ ...ITEM, status: 'published' }, 'published')).toEqual([
       { text: 'Article', strong: false },
       { text: ' · ', strong: false },
@@ -163,7 +163,7 @@ describe('getKicker', () => {
     ])
   })
 
-  it('shows a changed status with an arrow (design 03a)', () => {
+  it('shows a changed status with an arrow', () => {
     expect(getKicker(ITEM, 'published')).toEqual([
       { text: 'Article', strong: false },
       { text: ' · ', strong: false },
@@ -173,7 +173,7 @@ describe('getKicker', () => {
     ])
   })
 
-  it('adds "Archived" for an archived item, with only "Archived" strong (design 03c)', () => {
+  it('adds "Archived" for an archived item, with only "Archived" strong', () => {
     expect(getKicker({ ...ITEM, archived: true }, 'review')).toEqual([
       { text: 'Article', strong: false },
       { text: ' · ', strong: false },

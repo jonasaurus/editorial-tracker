@@ -18,7 +18,8 @@ import { STATUS_LABELS, TYPE_LABELS } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
 /**
- * The column header text and width (design 02a-list). Widths include 12px padding each side.
+ * The column header text and width (design-system §11 "List table"). Widths include 12px
+ * padding each side.
  * Below `xl`, Type, Status, Authors and Created by are only as wide as their text (`w-px`). The
  * authors wrap after a comma. The title gets the rest of the width.
  */

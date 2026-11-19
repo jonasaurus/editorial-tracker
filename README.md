@@ -112,7 +112,6 @@ Screenshots of the app with the demo data:
 | ![Drag to publish](docs/screenshots/drag-to-publish.png) | ![Item dialog, armed to publish](docs/screenshots/item-publish.png) |
 | ![Contributor board](docs/screenshots/contributor.png) | ![List view on a phone](docs/screenshots/mobile-list.png) |
 
-The design screens are in [docs/design/](docs/design/).
 
 ## Supply-chain safety
 

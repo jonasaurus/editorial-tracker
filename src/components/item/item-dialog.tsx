@@ -105,7 +105,7 @@ export function ItemDialog({ state, closeHref, today, user }: Props) {
         className={cn(
           'fixed top-4 left-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 flex-col overflow-y-auto bg-card text-sm text-foreground shadow-xl outline-none md:max-h-[calc(100dvh-10rem)]',
           'duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
-          // Design 03e: the small message dialog sits lower.
+          // design-system §11: the small message dialog sits lower.
           isForm ? 'max-w-dialog md:top-20' : 'max-w-dialog-sm md:top-50',
         )}
       >

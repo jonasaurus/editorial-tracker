@@ -75,7 +75,7 @@ export function ListView({
         itemHref={itemHref}
       />
 
-      {/* The empty box is outside the table, full width under the header line (design 02a-empty-list). */}
+      {/* The empty box is outside the table, full width under the header line (design-system §7). */}
       {empty.kind === 'no-items' && <NoItemsState className="mt-4" />}
       {empty.kind === 'no-results' && (
         <NoResultsState className="mt-4" total={total} clearHref={clearHref} />

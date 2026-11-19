@@ -264,7 +264,7 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
               value={values.deadline}
               onChange={(deadline) => set('deadline', deadline)}
               // The deadline state follows the saved status: an armed Publish still shows the
-              // overdue text (design 03a).
+              // overdue text (design-system §5).
               status={item?.status ?? values.status}
               archived={item?.archived ?? false}
               today={today}

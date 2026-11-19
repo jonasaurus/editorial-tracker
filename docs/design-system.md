@@ -1,6 +1,6 @@
 # Design system
 
-The visual rules for the Editorial Tracker. The behaviour is in [spec.md](spec.md). The screens are in [design/](design/).
+The visual rules for the Editorial Tracker. The behaviour is in [spec.md](spec.md). This file and the code are the source of truth for the design.
 
 Direction: Swiss editorial style. Sand background, ink text, square corners, strong type, one brand accent (orange). Built with shadcn/ui and Tailwind CSS v4. The tokens are in `src/app/(frontend)/globals.css` (see the `@theme` block).
 
@@ -99,6 +99,7 @@ One state function and one formatter (spec DL-1 to DL-5).
 - The short form shows the year only when it is not the current year.
 - Singular: "1 day overdue".
 - In the dialog, an overdue date is red text in a normal field. A red border means an input error only.
+- In the dialog, the deadline style follows the saved status. An armed Publish still shows an overdue deadline as overdue.
 - The list's Deadline column is 200px wide.
 
 ## 6. Metadata and counts
@@ -109,7 +110,15 @@ One state function and one formatter (spec DL-1 to DL-5).
   - "Archived today 10:40" (the time of the last update: an archived item is read-only, and there is no `archivedAt`, MODEL-3)
 - Dates use the deadline formatter, plus a time for events.
 - A line starts with a capital letter. After "·", use lowercase.
-- Counts: "14 items · 2 overdue · 1 archived" (app bar), "3 · 1 archived" (column). "overdue" is always 600 and red.
+- Counts: "14 items · 2 overdue · 1 archived" (app bar), "3 · 1 archived" (column). "overdue" is always 600 and red. In a column count, the archived part is 14px regular.
+
+### Kicker (item dialog)
+
+The line above the title. The separators (" · ", " → ") are not strong.
+
+- New item: "New item".
+- Saved item: "Article · **Review**". When another step is selected: "Article · **Review** → **Published**".
+- Archived item: "Article · Review · **Archived**". Only "Archived" is strong (the status cannot change).
 
 ## 7. Messages
 
@@ -117,7 +126,7 @@ One state function and one formatter (spec DL-1 to DL-5).
 - **Lock + tooltip** (a restriction on one control).
 - **Toast** (errors only, Sonner): ink background, 3px red left rule, `CircleAlert` icon, title + text.
 - **Field error**: red border + red message under the field.
-- **Empty state**: dashed `--color-input` border, title (14px semibold) + next step (12px muted). Optional action button.
+- **Empty state**: dashed `--color-input` border, title (14px semibold) + next step (12px muted). Optional action button. In the list view, the box is outside the table, full width under the header line.
 
 ## 8. Words
 
@@ -150,9 +159,33 @@ Used: `Columns4` (Board), `List`, `Plus`, `ChevronDown`, `User`, `ArrowUpRight`,
 | User menu | `DropdownMenu` |
 | Type and Author filters | `Select` or `DropdownMenu`, `variant="ghost" size="sm"` |
 | Item dialog, Not found | `Dialog` (680px; 520px for messages) |
-| Authors | Chips + `DropdownMenu` with checkbox items (a checkable list, no search field). The menu stays open after each change |
+| Authors | Chips + `DropdownMenu` with checkbox items (a checkable list, no search field). The menu stays open after each change. It opens under the whole field (left edges aligned). The check is on the left |
 | Deadline | Date picker (`Popover` + `Calendar`) |
 | List view | `Table` (plain, server-sorted); the status tabs are a `<nav>` of links |
 | Toast | `Sonner` |
 | Tooltip | `Tooltip` |
 | Publish pulse | Magic UI `PulsatingButton` |
+
+## 11. Layout
+
+### App bar
+
+- Order: mark, user menu, counts, filters, Board/List switch, then "New item" on the right.
+- `md` and up: one row. A group goes to the next row only when it does not fit. A 1px divider sits between groups. A group at the start of a row has no divider.
+- Below `md`: mark, user menu and "New item"; then the counts; then the filters. There is no view switch (LIST-5).
+
+### Status tabs
+
+- 24px text. The text sits 14px above the 2px orange rule of the active tab.
+
+### List table
+
+- Rows are 48px high. The title wraps. Card and list titles use `text-wrap: balance`.
+- Column widths (12px padding on each side included): Title at least 240px, Deadline 200px + padding. At `xl` and up: Type 120px, Status 120px, Authors 220px, Created by 160px. Below `xl`, these four are only as wide as their text, and the authors wrap only after a comma.
+- When the table is wider than the screen, it scrolls in its box.
+
+### Dialogs
+
+- Item dialog: 680px wide, 80px from the top (`md` and up). Message dialog (Not found): 520px wide, 200px from the top.
+- Small screens: 16px from each edge.
+- The dialog scrolls inside. The footer with the buttons stays at the bottom.
