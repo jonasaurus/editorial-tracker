@@ -288,7 +288,7 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
 }
 
 /**
- * Runs the drop outside the provider's render transition, so the drop shows at once (G1).
+ * Runs the drop outside the provider's render transition, so the drop shows at once.
  * Also starts and ends the live-update pause of a drag (LIVE-2).
  */
 function DropMonitor({

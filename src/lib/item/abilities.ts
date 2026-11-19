@@ -64,7 +64,7 @@ export function getItemAbilities(
     }
   }
 
-  // PERM-2, ITEM-8a: a contributor cannot change a published item.
+  // PERM-2, ITEM-13: a contributor cannot change a published item.
   if (mode === 'published-read-only') {
     return { mode: 'published-read-only', lockedStatuses, ...none, lockedAuthorIds: [] }
   }

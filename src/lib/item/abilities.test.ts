@@ -87,7 +87,7 @@ describe('getItemAbilities: archived item', () => {
 })
 
 describe('getItemAbilities: published item', () => {
-  it('shows an own published item read-only to a contributor (PERM-2, ITEM-8a)', () => {
+  it('shows an own published item read-only to a contributor (PERM-2, ITEM-13)', () => {
     expect(getItemAbilities(CONTRIBUTOR, item({ status: 'published' }))).toEqual({
       mode: 'published-read-only',
       lockedStatuses: ['published'],

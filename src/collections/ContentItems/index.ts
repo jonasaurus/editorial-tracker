@@ -60,7 +60,7 @@ const canUpdate: Access = ({ req: { user } }) => {
 const serverOnly = { create: () => false, update: () => false }
 
 /**
- * A3: the value rules run for every save (REST, Local API, Admin panel).
+ * API-2: the value rules run for every save (REST, Local API, Admin panel).
  * A rejected change is not saved, and the client gets 403 with the message.
  */
 const enforceValueRules: CollectionBeforeChangeHook<ContentItem> = ({
