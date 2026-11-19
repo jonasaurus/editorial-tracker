@@ -20,6 +20,21 @@ export type ItemAbilities = {
   lockedAuthorIds: number[]
 }
 
+/** Steps the user cannot select (ITEM-4). PERM-3: only editors publish. */
+export function getLockedStatuses(role: Role): ItemStatus[] {
+  return role === 'editor' ? [] : ['published']
+}
+
+/**
+ * How the user can change an item. PERM-6, ITEM-8: an archived item is read-only.
+ * PERM-2, ITEM-13: a contributor cannot change a published item.
+ */
+export function getItemMode(role: Role, item: Pick<ItemDetail, 'archived' | 'status'>): ItemMode {
+  if (item.archived) return 'archived'
+  if (role !== 'editor' && item.status === 'published') return 'published-read-only'
+  return 'edit'
+}
+
 /**
  * The UI mirror of the server rules (PERM-8). `item` null: a new item.
  * The server checks every change again (`rules.ts` and the collection access).
@@ -29,16 +44,17 @@ export function getItemAbilities(
   item: ItemDetail | null,
 ): ItemAbilities {
   const isEditor = user.role === 'editor'
-  // PERM-3, ITEM-4: only editors publish.
-  const lockedStatuses: ItemStatus[] = isEditor ? [] : ['published']
+  const lockedStatuses = getLockedStatuses(user.role)
   const none = { canArchive: false, canUnarchive: false }
 
   // AUTH-1: the creator is always an author of a new item. The server adds it back anyway.
   if (!item) return { mode: 'edit', lockedStatuses, ...none, lockedAuthorIds: [user.id] }
 
+  const mode = getItemMode(user.role, item)
+
   // PERM-6, ITEM-8: an archived item is read-only. PERM-5: only an editor unarchives a
   // published item.
-  if (item.archived) {
+  if (mode === 'archived') {
     return {
       mode: 'archived',
       lockedStatuses,
@@ -49,7 +65,7 @@ export function getItemAbilities(
   }
 
   // PERM-2, ITEM-8a: a contributor cannot change a published item.
-  if (!isEditor && item.status === 'published') {
+  if (mode === 'published-read-only') {
     return { mode: 'published-read-only', lockedStatuses, ...none, lockedAuthorIds: [] }
   }
 

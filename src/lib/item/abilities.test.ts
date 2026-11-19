@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { ItemStatus } from '@/lib/items'
 
-import { getItemAbilities } from './abilities'
+import { getItemAbilities, getItemMode, getLockedStatuses } from './abilities'
 import type { ItemDetail } from './types'
 
 const EDITOR = { id: 1, role: 'editor' } as const
@@ -143,4 +143,40 @@ describe('getItemAbilities: edit', () => {
       })
     },
   )
+})
+
+describe('getLockedStatuses (ITEM-4, PERM-3)', () => {
+  it('locks nothing for an editor', () => {
+    expect(getLockedStatuses('editor')).toEqual([])
+  })
+
+  it('locks published for a contributor', () => {
+    expect(getLockedStatuses('contributor')).toEqual(['published'])
+  })
+})
+
+describe('getItemMode (PERM-2, PERM-6)', () => {
+  it('is archived for an archived item, for both roles and every status', () => {
+    for (const status of [...UNPUBLISHED, 'published' as const]) {
+      expect(getItemMode('editor', { archived: true, status })).toBe('archived')
+      expect(getItemMode('contributor', { archived: true, status })).toBe('archived')
+    }
+  })
+
+  it('is published-read-only for a contributor and a published item', () => {
+    expect(getItemMode('contributor', { archived: false, status: 'published' })).toBe(
+      'published-read-only',
+    )
+  })
+
+  it('is edit for an editor and a published item', () => {
+    expect(getItemMode('editor', { archived: false, status: 'published' })).toBe('edit')
+  })
+
+  it('is edit for both roles and an unpublished item', () => {
+    for (const status of UNPUBLISHED) {
+      expect(getItemMode('editor', { archived: false, status })).toBe('edit')
+      expect(getItemMode('contributor', { archived: false, status })).toBe('edit')
+    }
+  })
 })
