@@ -5,6 +5,7 @@ import {
   DragDropProvider,
   type DragEndEvent,
   DragOverlay,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useDragDropMonitor,
@@ -23,6 +24,7 @@ import {
 import { moveItem } from '@/app/(frontend)/item/actions'
 import { BoardColumn } from '@/components/dashboard/board-column'
 import { isItemDragData, ItemCardOverlay } from '@/components/dashboard/item-card'
+import { usePauseLive } from '@/components/live/live-updates'
 import { loginPath } from '@/lib/auth/next-path'
 import { buildBoard, type BoardItem } from '@/lib/dashboard/board'
 import {
@@ -133,6 +135,18 @@ const plugins: Record<Role, PluginsFunction> = {
   contributor: withAccessibility('contributor'),
 }
 
+/**
+ * The keyboard sensor moves on ArrowUp and ArrowDown by `offset.y`, which is 0. It then does not
+ * prevent the default, so the page scrolls. During a keyboard drag this listener prevents it.
+ */
+function preventArrowScroll(event: KeyboardEvent) {
+  if (event.key === 'ArrowUp' || event.key === 'ArrowDown') event.preventDefault()
+}
+
+function stopArrowScrollGuard() {
+  document.removeEventListener('keydown', preventArrowScroll, { capture: true })
+}
+
 /** Measures the distance between two columns, for the keyboard step. */
 function measureColumnPitch() {
   const [first, second] = document.querySelectorAll('[data-board-column]')
@@ -151,9 +165,34 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
   const columns = buildBoard(optimisticItems, today).columns
   /** The item to focus after a drop, when the focus is lost. */
   const focusId = useRef<number | null>(null)
+  const pause = usePauseLive()
+  /** The release of the 'drag' pause during a drag (LIVE-2). */
+  const releaseDrag = useRef<(() => void) | null>(null)
+
+  const endDrag = useCallback(() => {
+    releaseDrag.current?.()
+    releaseDrag.current = null
+    stopArrowScrollGuard()
+  }, [])
+
+  const onDragStart = useCallback(
+    ({ operation }: DragStartEvent) => {
+      endDrag()
+      // LIVE-2: no live refresh during a drag. A refresh would render the board under the drag.
+      releaseDrag.current = pause('drag')
+      if (operation.activatorEvent instanceof KeyboardEvent) {
+        document.addEventListener('keydown', preventArrowScroll, { capture: true })
+      }
+    },
+    [pause, endDrag],
+  )
+
+  // A drag can end with an unmount (for example, a navigation). Do not keep the pause then.
+  useEffect(() => endDrag, [endDrag])
 
   const onDragEnd = useCallback(
     ({ operation, canceled }: DragEndEvent) => {
+      endDrag()
       const id = operation.source?.id
       const move = describe(operation)
       // DND-2: no request for a cancel, the same column or a column the user cannot drop on.
@@ -165,12 +204,16 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
       startTransition(async () => {
         addOptimistic({ id, status: to })
         let result: ItemActionResult
+        // LIVE-2: no live refresh while the move is pending.
+        const releaseMove = pause('move')
         try {
           result = await moveItem(id, to)
         } catch {
           const error = getMoveError({ reason: 'no-response' }, from)
           showError(error.title, error.text)
           return
+        } finally {
+          releaseMove()
         }
         if (result.ok) return
         switch (result.reason) {
@@ -197,7 +240,7 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
         }
       })
     },
-    [role, router, addOptimistic],
+    [role, router, addOptimistic, pause, endDrag],
   )
 
   // After a drop the item is in a new column. Keep the focus on it (keyboard drop).
@@ -211,7 +254,7 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
 
   return (
     <DragDropProvider sensors={sensors} plugins={plugins[role]} onDragStart={measureColumnPitch}>
-      <DropMonitor onDragEnd={onDragEnd} />
+      <DropMonitor onDragStart={onDragStart} onDragEnd={onDragEnd} />
       <div className="grid gap-x-4 gap-y-8 md:grid-cols-4">
         {columns.map((column) => (
           <BoardColumn
@@ -234,9 +277,18 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
   )
 }
 
-/** Runs the drop outside the provider's render transition, so the drop shows at once (G1). */
-function DropMonitor({ onDragEnd }: { onDragEnd: (event: DragEndEvent) => void }) {
-  const handlers = useMemo(() => ({ onDragEnd }), [onDragEnd])
+/**
+ * Runs the drop outside the provider's render transition, so the drop shows at once (G1).
+ * Also starts and ends the live-update pause of a drag (LIVE-2).
+ */
+function DropMonitor({
+  onDragStart,
+  onDragEnd,
+}: {
+  onDragStart: (event: DragStartEvent) => void
+  onDragEnd: (event: DragEndEvent) => void
+}) {
+  const handlers = useMemo(() => ({ onDragStart, onDragEnd }), [onDragStart, onDragEnd])
   useDragDropMonitor(handlers)
   return null
 }

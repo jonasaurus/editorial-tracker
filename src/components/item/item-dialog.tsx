@@ -2,13 +2,15 @@
 
 import { useRouter } from 'next/navigation'
 import { Dialog as DialogPrimitive } from 'radix-ui'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ConfirmDialog } from '@/components/item/confirm-dialog'
 import { ItemForm } from '@/components/item/item-form'
 import { NotFoundContent } from '@/components/item/not-found-dialog'
+import { usePauseLive } from '@/components/live/live-updates'
 import type { ItemDialogState } from '@/lib/item/types'
 import type { Role } from '@/lib/items'
+import { showError } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -30,6 +32,9 @@ export function ItemDialog({ state, closeHref, today, user }: Props) {
   const [open, setOpen] = useState(true)
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const dirty = useRef(false)
+  const pause = usePauseLive()
+  /** The release of the 'dialog' pause while the form has unsaved edits (LIVE-2). */
+  const releaseDirty = useRef<(() => void) | null>(null)
 
   // ITEM-2: close with `replace`, and keep the filters.
   const close = useCallback(() => {
@@ -43,9 +48,37 @@ export function ItemDialog({ state, closeHref, today, user }: Props) {
     else close()
   }, [close])
 
-  const onDirtyChange = useCallback((value: boolean) => {
-    dirty.current = value
-  }, [])
+  const onDirtyChange = useCallback(
+    (value: boolean) => {
+      dirty.current = value
+      // LIVE-2: no live refresh while the form has unsaved edits.
+      if (value && !releaseDirty.current) releaseDirty.current = pause('dialog')
+      if (!value && releaseDirty.current) {
+        releaseDirty.current()
+        releaseDirty.current = null
+      }
+    },
+    [pause],
+  )
+
+  useEffect(
+    () => () => {
+      releaseDirty.current?.()
+      releaseDirty.current = null
+    },
+    [],
+  )
+
+  // ERR-3: a refresh found that the open item is gone, or the user can no longer read it.
+  // Only a change from `edit` to `not-found`. A cold load of a missing item shows ITEM-12.
+  const previousKind = useRef(state.kind)
+  useEffect(() => {
+    const previous = previousKind.current
+    previousKind.current = state.kind
+    if (previous !== 'edit' || state.kind !== 'not-found') return
+    showError('You no longer have access to this item.')
+    close()
+  }, [state.kind, close])
 
   const isForm = state.kind !== 'not-found'
   const opener = state.kind === 'edit' ? String(state.item.id) : state.kind

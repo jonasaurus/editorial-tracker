@@ -23,6 +23,7 @@ import { CloseButton } from '@/components/item/close-button'
 import { ConfirmDialog } from '@/components/item/confirm-dialog'
 import { DeadlineField } from '@/components/item/deadline-field'
 import { StatusStepper } from '@/components/item/status-stepper'
+import { usePauseLive } from '@/components/live/live-updates'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -79,6 +80,12 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
 
   const dirty = !readOnly && isDirty(initial, values)
   useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
+
+  // LIVE-2: no live refresh while a confirm is open. A refresh would remount the form.
+  const pause = usePauseLive()
+  useEffect(() => {
+    if (confirm) return pause('confirm')
+  }, [confirm, pause])
 
   const id = useId()
   const ids = {

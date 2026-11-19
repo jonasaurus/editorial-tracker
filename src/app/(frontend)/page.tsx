@@ -6,6 +6,7 @@ import { Board, type BoardEmpty } from '@/components/dashboard/board'
 import type { FilterOption } from '@/components/dashboard/filter-menu'
 import { ListView } from '@/components/dashboard/list-view'
 import { ItemDialog } from '@/components/item/item-dialog'
+import { LiveUpdates } from '@/components/live/live-updates'
 import { toPathWithQuery } from '@/lib/auth/next-path'
 import { requireSession } from '@/lib/auth/session'
 import { buildBoard, formatCounts } from '@/lib/dashboard/board'
@@ -19,6 +20,7 @@ import {
   type SearchParams,
 } from '@/lib/dashboard/params'
 import { getDashboardData } from '@/lib/dashboard/query'
+import { getDashboardVersion } from '@/lib/dashboard/version'
 import { todayInCopenhagen } from '@/lib/deadline'
 import { getItemDialogData } from '@/lib/item/detail'
 import { TYPE_LABELS, TYPES } from '@/lib/items'
@@ -33,6 +35,9 @@ export default async function DashboardPage({ searchParams }: Props) {
   const { user, canAccessAdmin } = await requireSession(toPathWithQuery('/', query))
   const payload = await getPayload({ config })
 
+  // LIVE-1: read the version before the items (ADR 0008). A change between the two reads then
+  // gives one more refresh, and no change is missed.
+  const version = await getDashboardVersion(payload, user)
   const { params, items, total, hasAnyItem, authors } = await getDashboardData(
     payload,
     user,
@@ -98,7 +103,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   )
 
   return (
-    <>
+    <LiveUpdates version={version}>
       <AppBar
         user={{ name: user.name, role: user.role, canAccessAdmin }}
         counts={formatCounts({
@@ -154,6 +159,6 @@ export default async function DashboardPage({ searchParams }: Props) {
           user={{ id: user.id, role: user.role }}
         />
       )}
-    </>
+    </LiveUpdates>
   )
 }
