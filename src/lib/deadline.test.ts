@@ -3,8 +3,13 @@ import { describe, expect, it } from 'vitest'
 import {
   addDays,
   formatDeadline,
+  formatPlainDate,
   getDeadlineState,
   isPlainDate,
+  localDateToPlainDate,
+  plainDateToLocalDate,
+  toCopenhagenDate,
+  toCopenhagenTime,
   todayInCopenhagen,
 } from './deadline'
 
@@ -165,5 +170,77 @@ describe('formatDeadline', () => {
     expect(formatDeadline('2026-12-30', 'overdue', '2027-01-02', 'short')).toBe(
       '30 Dec 2026 · 3 days overdue',
     )
+  })
+})
+
+describe('toCopenhagenDate and toCopenhagenTime', () => {
+  it.each([
+    [
+      'winter time, after midnight in Copenhagen',
+      '2026-11-18T23:30:00.000Z',
+      '2026-11-19',
+      '00:30',
+    ],
+    [
+      'winter time, before midnight in Copenhagen',
+      '2026-11-18T22:59:00.000Z',
+      '2026-11-18',
+      '23:59',
+    ],
+    [
+      'summer time, after midnight in Copenhagen',
+      '2026-07-01T22:05:00.000Z',
+      '2026-07-02',
+      '00:05',
+    ],
+    ['a morning in winter time', '2026-11-19T08:12:00.000Z', '2026-11-19', '09:12'],
+    ['a morning in summer time', '2026-07-01T07:12:00.000Z', '2026-07-01', '09:12'],
+    ['the spring change day, before the change', '2026-03-29T00:59:00.000Z', '2026-03-29', '01:59'],
+    ['the spring change day, after the change', '2026-03-29T01:00:00.000Z', '2026-03-29', '03:00'],
+    ['the autumn change day, the first 02:30', '2026-10-25T00:30:00.000Z', '2026-10-25', '02:30'],
+    ['the autumn change day, the second 02:30', '2026-10-25T01:30:00.000Z', '2026-10-25', '02:30'],
+    ['the autumn change day, late evening', '2026-10-25T22:59:00.000Z', '2026-10-25', '23:59'],
+    ["New Year's Eve, late evening UTC", '2026-12-31T23:30:00.000Z', '2027-01-01', '00:30'],
+    ['noon', '2026-11-19T11:00:00.000Z', '2026-11-19', '12:00'],
+  ])('converts %s', (_name, iso, date, time) => {
+    expect(toCopenhagenDate(iso)).toBe(date)
+    expect(toCopenhagenTime(iso)).toBe(time)
+  })
+
+  it('reads an ISO timestamp with an offset', () => {
+    expect(toCopenhagenDate('2026-11-19T00:30:00+01:00')).toBe('2026-11-19')
+    expect(toCopenhagenTime('2026-11-19T00:30:00+01:00')).toBe('00:30')
+  })
+})
+
+describe('formatPlainDate', () => {
+  it.each([
+    ['a day in the current year', '2026-11-03', '2026-11-19', '3 Nov'],
+    ['today', '2026-11-19', '2026-11-19', '19 Nov'],
+    ['a day in the next year', '2027-01-02', '2026-12-31', '2 Jan 2027'],
+    ['a day in the previous year', '2025-12-31', '2026-01-01', '31 Dec 2025'],
+    ['September', '2026-09-01', '2026-11-19', '1 Sep'],
+  ])('formats %s', (_name, day, today, expected) => {
+    expect(formatPlainDate(day, today)).toBe(expected)
+  })
+})
+
+describe('plainDateToLocalDate and localDateToPlainDate', () => {
+  it.each(['2026-11-19', '2026-03-29', '2026-10-25', '2024-02-29', '2026-12-31', '2027-01-01'])(
+    'round-trips %s',
+    (day) => {
+      expect(localDateToPlainDate(plainDateToLocalDate(day))).toBe(day)
+    },
+  )
+
+  it('gives local midnight of the day', () => {
+    const date = plainDateToLocalDate('2026-03-29')
+    expect([date.getFullYear(), date.getMonth(), date.getDate()]).toEqual([2026, 2, 29])
+    expect([date.getHours(), date.getMinutes()]).toEqual([0, 0])
+  })
+
+  it('reads the local day of a date, not the UTC day', () => {
+    expect(localDateToPlainDate(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05')
+    expect(localDateToPlainDate(new Date(2026, 0, 5, 0, 1))).toBe('2026-01-05')
   })
 })

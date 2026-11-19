@@ -9,9 +9,12 @@ export type ListSort = (typeof LIST_SORTS)[number]
 export type SortDir = 'asc' | 'desc'
 
 /**
- * The dashboard state in the URL (DASH-1, DASH-2, LIST-1, LIST-3). Session 6 adds `item`;
- * `dashboardHref` writes every key.
+ * The item dialog in the URL (ITEM-1): `item=new`, `item=<id>`, or a value that is not valid.
+ * `invalid` shows Not found (ITEM-12) and is not written back to links.
  */
+export type ItemParam = { kind: 'new' } | { kind: 'id'; id: number } | { kind: 'invalid' }
+
+/** The dashboard state in the URL (DASH-1, DASH-2, LIST-1, LIST-3, ITEM-1). `dashboardHref` writes every key. */
 export type DashboardParams = {
   view: DashboardView
   type: ItemType | null
@@ -25,6 +28,8 @@ export type DashboardParams = {
   sort: ListSort
   /** The list sort direction (LIST-3). Default `asc`. */
   dir: SortDir
+  /** The open item dialog (ITEM-1). `null`: no dialog. */
+  item: ItemParam | null
 }
 
 export type SearchParams = Record<string, string | string[] | undefined>
@@ -37,6 +42,7 @@ const DEFAULTS: DashboardParams = {
   status: null,
   sort: 'deadline',
   dir: 'asc',
+  item: null,
 }
 
 /** The first value of a param. */
@@ -80,7 +86,17 @@ export function parseDashboardParams(searchParams: SearchParams, role: Role): Da
     status: isItemStatus(status) ? status : null,
     sort: isListSort(sort) ? sort : DEFAULTS.sort,
     dir: dir === 'desc' ? 'desc' : 'asc',
+    // ITEM-1: read for both roles and both views. Access decides what the dialog shows.
+    item: parseItem(first(searchParams.item)),
   }
+}
+
+/** ITEM-1, ITEM-12: missing or empty is no dialog. Any other bad value is `invalid`. */
+function parseItem(value: string | undefined): ItemParam | null {
+  if (value === undefined || value === '') return null
+  if (value === 'new') return { kind: 'new' }
+  const id = parseId(value)
+  return id === null ? { kind: 'invalid' } : { kind: 'id', id }
 }
 
 /** The dashboard URL for `current` with `change` applied. Default values are not in the URL. */
@@ -94,6 +110,9 @@ export function dashboardHref(current: DashboardParams, change: Partial<Dashboar
   if (params.status !== null) query.set('status', params.status)
   if (params.sort !== DEFAULTS.sort) query.set('sort', params.sort)
   if (params.dir !== DEFAULTS.dir) query.set('dir', params.dir)
+  // ITEM-1: `item` is the last key. An `invalid` value is not written back.
+  if (params.item?.kind === 'new') query.set('item', 'new')
+  if (params.item?.kind === 'id') query.set('item', String(params.item.id))
   const text = query.toString()
   return text ? `/?${text}` : '/'
 }

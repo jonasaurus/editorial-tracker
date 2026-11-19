@@ -22,6 +22,40 @@ export function todayInCopenhagen(now: Date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen' }).format(now)
 }
 
+/** The `YYYY-MM-DD` date of an ISO timestamp in Europe/Copenhagen. */
+export function toCopenhagenDate(iso: string): string {
+  return todayInCopenhagen(new Date(iso))
+}
+
+const COPENHAGEN_TIME = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/Copenhagen',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
+
+/** The `HH:mm` time (24 hours) of an ISO timestamp in Europe/Copenhagen. */
+export function toCopenhagenTime(iso: string): string {
+  const parts = COPENHAGEN_TIME.formatToParts(new Date(iso))
+  const part = (type: 'hour' | 'minute') => parts.find((p) => p.type === type)?.value ?? '00'
+  return `${part('hour')}:${part('minute')}`
+}
+
+/**
+ * The calendar uses local `Date` values. Local constructors and getters keep the same day in
+ * every time zone: no UTC shift.
+ */
+export function plainDateToLocalDate(day: string): Date {
+  return new Date(Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10)))
+}
+
+/** The local day of a calendar `Date` as `YYYY-MM-DD`. */
+export function localDateToPlainDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${String(date.getFullYear()).padStart(4, '0')}-${month}-${day}`
+}
+
 /** Adds days to a plain date. UTC math, so daylight saving time has no effect. */
 export function addDays(day: string, days: number): string {
   const date = new Date(`${day}T00:00:00.000Z`)
@@ -58,6 +92,11 @@ function formatDate(day: string, withYear: boolean): string {
   const [year, month, date] = day.split('-')
   const text = `${Number(date)} ${MONTHS[Number(month) - 1]}`
   return withYear ? `${text} ${year}` : text
+}
+
+/** A plain date in the short form: "3 Nov", or "3 Nov 2027" when not in the year of `today`. */
+export function formatPlainDate(day: string, today: string): string {
+  return formatDate(day, day.slice(0, 4) !== today.slice(0, 4))
 }
 
 /** DL-4: all deadline text (design-system §5). */

@@ -23,6 +23,7 @@ const DEFAULTS: DashboardParams = {
   status: null,
   sort: 'deadline',
   dir: 'asc',
+  item: null,
 }
 
 type ItemInput = Pick<ContentItem, 'title' | 'type'> &

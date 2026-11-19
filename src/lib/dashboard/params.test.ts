@@ -17,6 +17,7 @@ const DEFAULTS: DashboardParams = {
   status: null,
   sort: 'deadline',
   dir: 'asc',
+  item: null,
 }
 
 describe('parseDashboardParams', () => {
@@ -36,6 +37,7 @@ describe('parseDashboardParams', () => {
           status: 'review',
           sort: 'title',
           dir: 'desc',
+          item: '4',
         },
         'editor',
       ),
@@ -47,6 +49,7 @@ describe('parseDashboardParams', () => {
       status: 'review',
       sort: 'title',
       dir: 'desc',
+      item: { kind: 'id', id: 4 },
     })
   })
 
@@ -164,6 +167,7 @@ describe('parseDashboardParams', () => {
           status: ['draft', 'idea'],
           sort: ['status', 'title'],
           dir: ['desc', 'asc'],
+          item: ['new', '3'],
         },
         'editor',
       ),
@@ -175,6 +179,7 @@ describe('parseDashboardParams', () => {
       status: 'draft',
       sort: 'status',
       dir: 'desc',
+      item: { kind: 'new' },
     })
   })
 
@@ -188,6 +193,7 @@ describe('parseDashboardParams', () => {
           status: ['x', 'draft'],
           sort: ['foo', 'title'],
           dir: ['up', 'desc'],
+          item: ['', '3'],
         },
         'editor',
       ),
@@ -195,7 +201,52 @@ describe('parseDashboardParams', () => {
   })
 
   it('ignores unknown keys', () => {
-    expect(parseDashboardParams({ foo: 'bar', item: '3' }, 'editor')).toEqual(DEFAULTS)
+    expect(parseDashboardParams({ foo: 'bar', items: '3' }, 'editor')).toEqual(DEFAULTS)
+  })
+
+  it.each([
+    ['1', 1],
+    ['42', 42],
+    ['9007199254740991', 9007199254740991],
+  ])('reads item=%s as an id (ITEM-1)', (item, id) => {
+    expect(parseDashboardParams({ item }, 'editor').item).toEqual({ kind: 'id', id })
+  })
+
+  it('reads item=new (ITEM-1, ITEM-11)', () => {
+    expect(parseDashboardParams({ item: 'new' }, 'contributor').item).toEqual({ kind: 'new' })
+  })
+
+  it.each([[''], [undefined]])('gives no dialog for item=%j (ITEM-1)', (item) => {
+    expect(parseDashboardParams({ item }, 'editor').item).toBeNull()
+  })
+
+  it.each([
+    ['abc'],
+    ['0'],
+    ['-1'],
+    ['1.5'],
+    ['01'],
+    ['1e3'],
+    [' 1'],
+    ['+1'],
+    ['New'],
+    ['9007199254740992'],
+  ])('reads item=%j as invalid (ITEM-12)', (item) => {
+    expect(parseDashboardParams({ item }, 'editor').item).toEqual({ kind: 'invalid' })
+  })
+
+  it('reads item in both views and for both roles (ITEM-1)', () => {
+    for (const role of ['editor', 'contributor'] as const) {
+      for (const view of ['board', 'list'] as const) {
+        expect(parseDashboardParams({ view, item: '5' }, role).item).toEqual({ kind: 'id', id: 5 })
+      }
+    }
+  })
+
+  it('reads item=invalid when the first value of an array is bad (ITEM-12)', () => {
+    expect(parseDashboardParams({ item: ['x', '3'] }, 'editor').item).toEqual({
+      kind: 'invalid',
+    })
   })
 })
 
@@ -210,9 +261,10 @@ describe('dashboardHref', () => {
     ).toBe('/?view=list&type=video&author=5&archived=1')
   })
 
-  it('writes all keys in the order view, type, author, archived, status, sort, dir', () => {
+  it('writes all keys in the order view, type, author, archived, status, sort, dir, item', () => {
     expect(
       dashboardHref(DEFAULTS, {
+        item: { kind: 'id', id: 1 },
         dir: 'desc',
         sort: 'authors',
         status: 'published',
@@ -221,7 +273,27 @@ describe('dashboardHref', () => {
         type: 'video',
         view: 'list',
       }),
-    ).toBe('/?view=list&type=video&author=5&archived=1&status=published&sort=authors&dir=desc')
+    ).toBe(
+      '/?view=list&type=video&author=5&archived=1&status=published&sort=authors&dir=desc&item=1',
+    )
+  })
+
+  it('writes item as the last key (ITEM-1)', () => {
+    expect(
+      dashboardHref(DEFAULTS, { item: { kind: 'id', id: 12 }, dir: 'desc', view: 'list' }),
+    ).toBe('/?view=list&dir=desc&item=12')
+  })
+
+  it('writes item=new (ITEM-1)', () => {
+    expect(dashboardHref(DEFAULTS, { item: { kind: 'new' } })).toBe('/?item=new')
+  })
+
+  it('does not write an invalid item (ITEM-12)', () => {
+    expect(dashboardHref(DEFAULTS, { item: { kind: 'invalid' }, view: 'list' })).toBe('/?view=list')
+  })
+
+  it('removes the item with item: null (ITEM-2)', () => {
+    expect(dashboardHref({ ...DEFAULTS, item: { kind: 'id', id: 3 } }, { item: null })).toBe('/')
   })
 
   it('writes a status tab', () => {
@@ -258,6 +330,7 @@ describe('dashboardHref', () => {
       status: 'idea',
       sort: 'creator',
       dir: 'desc',
+      item: { kind: 'id', id: 3 },
     }
     expect(dashboardHref(current, DEFAULTS)).toBe('/')
   })
@@ -281,6 +354,8 @@ describe('dashboardHref', () => {
     { ...DEFAULTS, status: 'review' },
     { ...DEFAULTS, sort: 'status' },
     { ...DEFAULTS, dir: 'desc' },
+    { ...DEFAULTS, item: { kind: 'new' } },
+    { ...DEFAULTS, item: { kind: 'id', id: 77 } },
     {
       view: 'list',
       type: 'video',
@@ -289,6 +364,7 @@ describe('dashboardHref', () => {
       status: 'published',
       sort: 'title',
       dir: 'desc',
+      item: { kind: 'id', id: 8 },
     },
   ])('round-trips %j', (params) => {
     const href = dashboardHref(params, {})
