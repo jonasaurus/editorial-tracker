@@ -2,12 +2,13 @@
 
 import { useDragOperation, useDroppable } from '@dnd-kit/react'
 import { ArrowDown, Lock } from 'lucide-react'
+import { Fragment } from 'react'
 
 import { EmptyState } from '@/components/dashboard/empty-state'
 import { DraggableItemCard, ItemCard, isItemDragData } from '@/components/dashboard/item-card'
 import { StatusMarker } from '@/components/dashboard/status-marker'
 import { formatColumnCount, type BoardColumn as Column } from '@/lib/dashboard/board'
-import { canDropOn, canMoveItem } from '@/lib/dashboard/dnd'
+import { canDropOn, canMoveItem, getDropIndex } from '@/lib/dashboard/dnd'
 import { STATUS_LABELS, type ItemStatus, type Role } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
@@ -26,9 +27,9 @@ const emptyText: Record<ItemStatus, { title: string; text: string }> = {
 }
 
 /**
- * The drop slot at the top of a column during a drag (design-system §4 "Drop targets").
- * `locked`: the user cannot drop here (DND-2). `publish`: over Published (DND-3).
- * `move`: over another column.
+ * The drop slot of a column during a drag (design-system §4 "Drop targets").
+ * `locked`: the user cannot drop here (DND-2), at the top. `publish`: over Published (DND-3).
+ * `move`: over another column. `publish` and `move` show where the item will land (BOARD-2).
  */
 type Slot = 'locked' | 'publish' | 'move' | null
 
@@ -62,6 +63,19 @@ export function BoardColumn({ column, today, role, hrefs, showEmptyState = true 
             : 'move'
           : null
 
+  // BOARD-2: the slot sits where the item will land. The id breaks a tie of equal titles.
+  const place =
+    drag && (slot === 'move' || slot === 'publish') && column.items.length > 0
+      ? {
+          slot,
+          index: getDropIndex(column, {
+            id: typeof source?.id === 'number' ? source.id : 0,
+            title: drag.title,
+            deadline: drag.deadline,
+          }),
+        }
+      : null
+
   return (
     <section
       ref={ref}
@@ -71,6 +85,8 @@ export function BoardColumn({ column, today, role, hrefs, showEmptyState = true 
         // The highlight sits outside the column box, so the layout does not move (design 02d).
         '-m-3 min-w-0 border border-transparent p-[11px]',
         slot === 'publish' && 'animate-publish-pulse border-publish/50 bg-publish/10',
+        // The slot can be below the fold in a long column, so the column is marked too.
+        slot === 'move' && 'border-input',
         slot === 'locked' && isDropTarget && 'cursor-not-allowed',
       )}
     >
@@ -94,19 +110,28 @@ export function BoardColumn({ column, today, role, hrefs, showEmptyState = true 
         </p>
       </div>
 
-      {slot && <DropSlot slot={slot} status={column.status} />}
+      {/* Locked: a message, not a place. Empty column: the place is the top. */}
+      {slot && (slot === 'locked' || column.items.length === 0) && (
+        <DropSlot slot={slot} status={column.status} className="mt-3" />
+      )}
 
       {column.items.length > 0 ? (
         <ul className="mt-3 flex flex-col gap-2">
-          {column.items.map((item) => (
-            <li key={item.id}>
-              {canMoveItem(role, item) ? (
-                <DraggableItemCard item={item} today={today} href={hrefs[item.id] ?? ''} />
-              ) : (
-                <ItemCard item={item} today={today} href={hrefs[item.id] ?? ''} />
-              )}
-            </li>
+          {column.items.map((item, index) => (
+            <Fragment key={item.id}>
+              {index === place?.index && <DropPlace slot={place.slot} status={column.status} />}
+              <li>
+                {canMoveItem(role, item) ? (
+                  <DraggableItemCard item={item} today={today} href={hrefs[item.id] ?? ''} />
+                ) : (
+                  <ItemCard item={item} today={today} href={hrefs[item.id] ?? ''} />
+                )}
+              </li>
+            </Fragment>
           ))}
+          {place?.index === column.items.length && (
+            <DropPlace slot={place.slot} status={column.status} />
+          )}
         </ul>
       ) : (
         showEmptyState && <EmptyState className="mt-3" {...emptyText[column.status]} />
@@ -115,8 +140,25 @@ export function BoardColumn({ column, today, role, hrefs, showEmptyState = true 
   )
 }
 
-/** The dashed slot at the top of a column during a drag (components.png "Drop to publish"). */
-function DropSlot({ slot, status }: { slot: NonNullable<Slot>; status: ItemStatus }) {
+/** The drop slot as an item of the card list. Hidden from screen readers: DND-5 announces the move. */
+function DropPlace({ slot, status }: { slot: 'move' | 'publish'; status: ItemStatus }) {
+  return (
+    <li aria-hidden>
+      <DropSlot slot={slot} status={status} />
+    </li>
+  )
+}
+
+/** The dashed drop slot during a drag (components.png "Drop to publish"). */
+function DropSlot({
+  slot,
+  status,
+  className,
+}: {
+  slot: NonNullable<Slot>
+  status: ItemStatus
+  className?: string
+}) {
   const Icon = slot === 'locked' ? Lock : ArrowDown
   const text =
     slot === 'locked'
@@ -128,12 +170,13 @@ function DropSlot({ slot, status }: { slot: NonNullable<Slot>; status: ItemStatu
   return (
     <div
       className={cn(
-        'mt-3 flex h-18 items-center justify-center gap-1.5 border border-dashed text-sm',
+        'flex h-18 items-center justify-center gap-1.5 border border-dashed text-sm',
         slot === 'publish'
           ? 'border-publish bg-publish/10 font-semibold text-foreground'
           : slot === 'move'
             ? 'border-input font-semibold text-foreground'
             : 'border-input text-muted-foreground',
+        className,
       )}
     >
       <Icon aria-hidden className="size-4" />

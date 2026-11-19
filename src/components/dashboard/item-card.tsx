@@ -19,8 +19,8 @@ type Props = {
   href: string
 }
 
-/** The data that a dragged item carries (DND-1, DND-5). */
-export type ItemDragData = { title: string; status: ItemStatus }
+/** The data that a dragged item carries (DND-1, DND-5). `deadline`: for the drop place (BOARD-2). */
+export type ItemDragData = { title: string; status: ItemStatus; deadline: string | null }
 
 /** Narrows the `data` of a drag source to `ItemDragData`. */
 export function isItemDragData(value: unknown): value is ItemDragData {
@@ -29,7 +29,9 @@ export function isItemDragData(value: unknown): value is ItemDragData {
     'title' in value &&
     typeof value.title === 'string' &&
     'status' in value &&
-    isItemStatus(value.status)
+    isItemStatus(value.status) &&
+    'deadline' in value &&
+    (value.deadline === null || typeof value.deadline === 'string')
   )
 }
 
@@ -118,7 +120,7 @@ export function ItemCard({ item, today, href }: Props) {
  * a click opens the item, a drag of 5px or Space starts a move.
  */
 export function DraggableItemCard({ item, today, href }: Props) {
-  const data: ItemDragData = { title: item.title, status: item.status }
+  const data: ItemDragData = { title: item.title, status: item.status, deadline: item.deadline }
   const { ref, handleRef, isDragSource } = useDraggable({ id: item.id, data })
 
   return (
