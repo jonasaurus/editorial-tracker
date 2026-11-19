@@ -92,13 +92,18 @@ export function ItemTable({ rows, today, sort, dir, sortHref, itemHref, classNam
   )
 }
 
-/** One item. Only the title is a link, so the row has no hover fill (ADR 0005). */
+/**
+ * One item. LIST-6: the title link stretches over the whole row, so a click anywhere opens the item.
+ * The link name is the title (ADR 0005).
+ */
 function ItemRow({ item, today, href }: { item: BoardItem; today: string; href: string }) {
   const { archived } = item
   const cell = 'h-12 px-3 py-2'
 
   return (
-    <TableRow className="border-border hover:bg-transparent">
+    // `translate-x-0`: WebKit uses a `<tr>` as the containing block of the stretched link only when
+    // the row has a transform. Without it, every row opens the last item.
+    <TableRow className="relative translate-x-0 border-border">
       <TableCell className={cn(cell, 'whitespace-normal')}>
         <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <Link
@@ -106,7 +111,9 @@ function ItemRow({ item, today, href }: { item: BoardItem; today: string; href: 
             scroll={false}
             data-item-link={item.id}
             className={cn(
-              'font-semibold underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50',
+              'font-semibold underline-offset-4 outline-none hover:underline',
+              // The focus ring is on the stretched area, inset: the table box clips an outer ring.
+              'after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset',
               archived ? 'text-muted-foreground' : 'text-foreground',
             )}
           >
