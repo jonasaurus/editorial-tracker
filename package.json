@@ -22,6 +22,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/dom": "0.5.1",
+    "@dnd-kit/react": "0.5.1",
     "@payloadcms/db-sqlite": "3.91.0",
     "@payloadcms/next": "3.91.0",
     "@payloadcms/ui": "3.91.0",
