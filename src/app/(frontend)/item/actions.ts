@@ -5,7 +5,7 @@ import { refresh } from 'next/cache'
 import { getPayload } from 'payload'
 
 import { getUser } from '@/lib/auth/session'
-import { createItemAs, setArchivedAs, updateItemAs } from '@/lib/item/save'
+import { createItemAs, moveItemAs, setArchivedAs, updateItemAs } from '@/lib/item/save'
 import type { ItemActionResult } from '@/lib/item/types'
 
 /*
@@ -43,4 +43,11 @@ export async function setArchived(id: unknown, archived: unknown): Promise<ItemA
   const user = await getUser()
   if (!user) return SESSION_EXPIRED
   return refreshOnSuccess(await setArchivedAs(await getPayload({ config }), user, id, archived))
+}
+
+/** Moves an item to another status: a drop on the board (DND-1). */
+export async function moveItem(id: unknown, status: unknown): Promise<ItemActionResult> {
+  const user = await getUser()
+  if (!user) return SESSION_EXPIRED
+  return refreshOnSuccess(await moveItemAs(await getPayload({ config }), user, id, status))
 }

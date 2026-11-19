@@ -12,6 +12,10 @@ export const STATUSES = [
   'published',
 ] as const satisfies readonly ItemStatus[]
 
+/** True for a known item status. */
+export const isItemStatus = (value: unknown): value is ItemStatus =>
+  STATUSES.some((status) => status === value)
+
 export const STATUS_LABELS: Record<ItemStatus, string> = {
   idea: 'Idea',
   draft: 'Draft',

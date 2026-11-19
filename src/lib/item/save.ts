@@ -1,6 +1,7 @@
 import { Forbidden, NotFound, ValidationError, type Payload } from 'payload'
 
 import { isItemRuleError } from '@/collections/ContentItems'
+import { isItemStatus } from '@/lib/items'
 import type { User } from '@/payload-types'
 
 import { parseItemInput } from './input'
@@ -10,6 +11,9 @@ const COLLECTION = 'content-items'
 
 /** The text when the item changed after the user opened it (for example, an editor published it). */
 const STALE_MESSAGE = 'You cannot change this item now. Close it and open it again.'
+
+/** The text when a moved item changed on the server (DND-4). */
+const MOVE_STALE_MESSAGE = 'This item changed on the server.'
 
 /** The messages for Payload field errors. The same texts as `parseItemInput`. */
 const FIELD_MESSAGES: Partial<Record<ItemField, string>> = {
@@ -71,6 +75,7 @@ async function toFailure(
   user: User,
   error: unknown,
   id: number | null,
+  staleMessage = STALE_MESSAGE,
 ): Promise<ItemActionResult> {
   // API-2: a value rule rejected the change.
   if (isItemRuleError(error)) return { ok: false, reason: 'rejected', message: error.message }
@@ -92,7 +97,7 @@ async function toFailure(
       overrideAccess: false,
     })
     return item
-      ? { ok: false, reason: 'rejected', message: STALE_MESSAGE }
+      ? { ok: false, reason: 'rejected', message: staleMessage }
       : { ok: false, reason: 'no-access' }
   }
 
@@ -174,5 +179,33 @@ export async function setArchivedAs(
     return { ok: true, id: doc.id }
   } catch (error) {
     return toFailure(payload, user, error, id)
+  }
+}
+
+/**
+ * Moves an item to another status as the user (DND-1). Only the status changes.
+ * A malformed id gives `no-access`, an unknown status gives `invalid`.
+ */
+export async function moveItemAs(
+  payload: Payload,
+  user: User,
+  id: unknown,
+  status: unknown,
+): Promise<ItemActionResult> {
+  if (!isItemId(id)) return { ok: false, reason: 'no-access' }
+  if (!isItemStatus(status)) {
+    return { ok: false, reason: 'invalid', errors: { status: 'Choose a status.' } }
+  }
+  try {
+    const doc = await payload.update({
+      collection: COLLECTION,
+      id,
+      data: { status },
+      user,
+      overrideAccess: false,
+    })
+    return { ok: true, id: doc.id }
+  } catch (error) {
+    return toFailure(payload, user, error, id, MOVE_STALE_MESSAGE)
   }
 }
