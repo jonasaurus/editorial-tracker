@@ -24,6 +24,18 @@ class ItemRuleError extends APIError<{ rule: RuleId }> {
   }
 }
 
+/**
+ * True for an `ItemRuleError`. Checks the status and the rule id, not the class name.
+ * Payload's own `Forbidden` has no `data`, so the two do not mix.
+ */
+export function isItemRuleError(error: unknown): error is APIError<{ rule: RuleId }> {
+  if (!(error instanceof APIError) || error.status !== 403) return false
+  const data: unknown = error.data
+  return (
+    typeof data === 'object' && data !== null && 'rule' in data && typeof data.rule === 'string'
+  )
+}
+
 /** "Own item": the user is the creator or an author (spec §4). */
 const ownItems = (userId: number): Where => ({
   or: [{ createdBy: { equals: userId } }, { authors: { equals: userId } }],
