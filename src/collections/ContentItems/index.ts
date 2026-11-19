@@ -9,7 +9,19 @@ import {
 import type { ContentItem } from '@/payload-types'
 
 import { isEditor, isEditorUser, isLoggedIn } from '../../access'
-import { checkItemChange } from './rules'
+import { checkItemChange, type RuleId } from './rules'
+
+/**
+ * A rejected item change: 403, the message, and the rule id in `data`.
+ * The name is explicit: the production build minifies class names, and
+ * Payload hides the message of an error without a name or data.
+ */
+class ItemRuleError extends APIError<{ rule: RuleId }> {
+  constructor(rule: RuleId, message: string) {
+    super(message, 403, { rule })
+    this.name = 'ItemRuleError'
+  }
+}
 
 /** "Own item": the user is the creator or an author (spec §4). */
 const ownItems = (userId: number): Where => ({
@@ -50,7 +62,7 @@ const enforceValueRules: CollectionBeforeChangeHook<ContentItem> = ({
     originalDoc: operation === 'update' ? originalDoc : undefined,
     now: new Date().toISOString(),
   })
-  if (!result.ok) throw new APIError(result.message, 403)
+  if (!result.ok) throw new ItemRuleError(result.rule, result.message)
   return result.data
 }
 

@@ -38,7 +38,7 @@ function editedFieldsChanged(original: ContentItem, next: Partial<ContentItem>):
   )
 }
 
-type RuleId = 'PERM-2' | 'PERM-3' | 'PERM-6' | 'AUTH-2'
+export type RuleId = 'PERM-2' | 'PERM-3' | 'PERM-6' | 'AUTH-2'
 
 export type RuleResult =
   { ok: true; data: Partial<ContentItem> } | { ok: false; rule: RuleId; message: string }
