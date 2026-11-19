@@ -48,7 +48,8 @@ const linkClass = 'outline-none after:absolute after:inset-0'
 /** The frame of a card. `ghost`: the item stays in its column during a drag (design 02d). */
 function cardClass(item: BoardItem, ghost = false): string {
   return cn(
-    'relative border p-3.5 has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50',
+    // design-system §2: one card height. 112px = 2 × 14px padding + 2 × 1px border + 82px content.
+    'relative flex h-28 flex-col border p-3.5 has-[a:focus-visible]:ring-3 has-[a:focus-visible]:ring-ring/50',
     ghost
       ? 'border-dashed border-input **:text-muted-foreground!'
       : item.archived
@@ -63,11 +64,12 @@ function ItemCardBody({ item, today, title }: Omit<Props, 'href'> & { title: Rea
 
   return (
     <>
-      <div className="flex items-center justify-between gap-3 text-xs">
-        <span className="flex items-center gap-2 text-muted-foreground">
-          {TYPE_LABELS[item.type]}
+      {/* Each line has a fixed height, so the content fits the card: 16 + 5 + 2 × 20 + 5 + 16 = 82px. */}
+      <div className="flex h-4 items-center justify-between gap-3 text-xs">
+        <span className="flex min-w-0 items-center gap-2 text-muted-foreground">
+          <span className="truncate">{TYPE_LABELS[item.type]}</span>
           {item.archived && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-input px-1.5 leading-4">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-input px-1.5 leading-4">
               <Archive aria-hidden className="size-3" />
               Archived
             </span>
@@ -75,22 +77,31 @@ function ItemCardBody({ item, today, title }: Omit<Props, 'href'> & { title: Rea
         </span>
         {/* BOARD-3: a published card shows the published date (the Published column sorts by it). */}
         {item.status === 'published' && item.publishedAt ? (
-          <time dateTime={item.publishedAt} className="text-muted-foreground">
+          <time
+            dateTime={item.publishedAt}
+            className="shrink-0 whitespace-nowrap text-muted-foreground"
+          >
             {formatPublished(item.publishedAt, today)}
           </time>
         ) : (
-          <DeadlineText item={item} today={today} variant="short" />
+          <DeadlineText
+            item={item}
+            today={today}
+            variant="short"
+            className="shrink-0 whitespace-nowrap"
+          />
         )}
       </div>
       <h3
         className={cn(
-          'mt-1.5 text-sm font-semibold text-balance',
+          // A long title ends with an ellipsis after 2 lines. The dialog shows the full title.
+          'mt-1.25 line-clamp-2 text-sm font-semibold text-balance',
           item.archived ? 'text-muted-foreground' : 'text-foreground',
         )}
       >
         {title}
       </h3>
-      {people && <p className="mt-1.5 text-xs text-muted-foreground">{people}</p>}
+      {people && <p className="mt-1.25 truncate text-xs text-muted-foreground">{people}</p>}
     </>
   )
 }

@@ -170,7 +170,8 @@ function DropSlot({
   return (
     <div
       className={cn(
-        'flex h-18 items-center justify-center gap-1.5 border border-dashed text-sm',
+        // The height of a card (design-system §2), so the slot shows the space the card will take.
+        'flex h-28 items-center justify-center gap-1.5 border border-dashed text-sm',
         slot === 'publish'
           ? 'border-publish bg-publish/10 font-semibold text-foreground'
           : slot === 'move'
