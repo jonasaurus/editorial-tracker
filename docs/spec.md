@@ -150,12 +150,12 @@ Pattern: the state, then the next step.
 
 ### 6.9 Live updates
 
-- **LIVE-1** The dashboard updates when other users change items. A small hook asks the server for a cheap "version" (latest `updatedAt` + count) about every 5 seconds and on window focus. It calls `router.refresh()` only when the version changes.
-- **LIVE-2** The hook pauses while the tab is hidden or the dialog has unsaved edits.
+- **LIVE-1** The dashboard updates when other users change items. A small hook asks the server for a cheap "version" (today, count and latest `updatedAt` of the items the user can read) about every 5 seconds, on window focus and when the tab becomes visible: `GET /api/content-items/version`. It calls `router.refresh()` only when the version is not the version of the page on screen. Without a session, the endpoint gives 401 and the page opens the login page (ERR-5).
+- **LIVE-2** The hook pauses while the tab is hidden, while the dialog has unsaved edits or an open confirm, during a drag, and while a move is pending.
 
 ## 7. API
 
-- **API-1** The Payload REST API gives the routes: list, create, read, update (`PATCH /api/content-items/:id`, also for status).
+- **API-1** The Payload REST API gives the routes: list, create, read, update (`PATCH /api/content-items/:id`, also for status), and the live-update version (`GET /api/content-items/version`, LIVE-1).
 - **API-2** The same rules apply to REST, the Local API and the Admin panel. GraphQL is off. Collection access returns a `Where` query (row scope). Value rules (PERM-3, PERM-4, PERM-6, AUTH-2) are in a collection `beforeChange` hook that compares the new value with the old document and throws `APIError(…, 403)`.
 - **API-3** The row scope for "own item" is `createdBy equals <user>` OR `authors equals <user>`. On `authors` (many users), `equals` matches when one of the authors is the user. `in` and `contains` give the same result. Do not use `not_equals` or `not_in` on `authors`: they compare each author on its own, so an item with 2 authors also matches.
 
