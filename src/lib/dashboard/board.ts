@@ -9,6 +9,8 @@ export type BoardItem = {
   type: ItemType
   status: ItemStatus
   deadline: string | null
+  /** ISO timestamp (UTC, `…Z`). The server sets it on each change to Published (MODEL-2). */
+  publishedAt: string | null
   archived: boolean
   /** Names of the authors, in the stored order. */
   authorNames: string[]
@@ -17,7 +19,7 @@ export type BoardItem = {
 
 export type BoardColumn = {
   status: ItemStatus
-  /** Active items by deadline, then archived items by deadline. */
+  /** Active items, then archived items, each in the BOARD-2 order of the column. */
   items: BoardItem[]
   /** Active (not archived) items (BOARD-1). */
   count: number
@@ -57,6 +59,7 @@ export function toBoardItem(doc: ContentItem): BoardItem {
     type: doc.type,
     status: doc.status,
     deadline: doc.deadline || null,
+    publishedAt: doc.publishedAt ?? null,
     archived: doc.archived === true,
     authorNames: (doc.authors ?? []).flatMap((author) => userName(author) ?? []),
     creatorName: userName(doc.createdBy),
@@ -65,23 +68,48 @@ export function toBoardItem(doc: ContentItem): BoardItem {
 
 const titleCollator = new Intl.Collator('en')
 
+/** The fields that the BOARD-2 sort uses. */
+type SortFields = Pick<BoardItem, 'id' | 'title' | 'deadline' | 'publishedAt'>
+
+/** Ties: title, then id (stable order between loads). */
+function compareByTitle(a: SortFields, b: SortFields): number {
+  return titleCollator.compare(a.title, b.title) || a.id - b.id
+}
+
 /** BOARD-2: earliest deadline first, no deadline last. Ties: title, then id. */
-export function compareByDeadline(a: BoardItem, b: BoardItem): number {
+export function compareByDeadline(a: SortFields, b: SortFields): number {
   if (a.deadline !== b.deadline) {
     if (a.deadline === null) return 1
     if (b.deadline === null) return -1
     // Plain `YYYY-MM-DD` strings sort in date order.
     return a.deadline < b.deadline ? -1 : 1
   }
-  return titleCollator.compare(a.title, b.title) || a.id - b.id
+  return compareByTitle(a, b)
+}
+
+/** BOARD-2, Published column: newest `publishedAt` first, none last. Ties: title, then id. */
+export function compareByPublished(a: SortFields, b: SortFields): number {
+  if (a.publishedAt !== b.publishedAt) {
+    if (a.publishedAt === null) return 1
+    if (b.publishedAt === null) return -1
+    // The server writes every value as `toISOString()` (same length, UTC), so strings sort in time order.
+    return a.publishedAt > b.publishedAt ? -1 : 1
+  }
+  return compareByTitle(a, b)
+}
+
+/** BOARD-2: the sort of one column. */
+export function compareInColumn(status: ItemStatus): (a: SortFields, b: SortFields) => number {
+  return status === 'published' ? compareByPublished : compareByDeadline
 }
 
 /** Groups items into status columns and counts them (BOARD-1, BOARD-2, DL-5). */
 export function buildBoard(items: BoardItem[], today: string): Board {
   const columns = STATUSES.map((status): BoardColumn => {
     const inColumn = items.filter((item) => item.status === status)
-    const active = inColumn.filter((item) => !item.archived).sort(compareByDeadline)
-    const archived = inColumn.filter((item) => item.archived).sort(compareByDeadline)
+    const compare = compareInColumn(status)
+    const active = inColumn.filter((item) => !item.archived).sort(compare)
+    const archived = inColumn.filter((item) => item.archived).sort(compare)
     return {
       status,
       items: [...active, ...archived],

@@ -8,6 +8,7 @@ import {
   type BoardItem,
   buildBoard,
   compareByDeadline,
+  compareByPublished,
   formatColumnCount,
   formatCounts,
   toBoardItem,
@@ -47,6 +48,7 @@ function item(change: Partial<BoardItem> = {}): BoardItem {
     type: 'article',
     status: 'draft',
     deadline: null,
+    publishedAt: null,
     archived: false,
     authorNames: [],
     creatorName: null,
@@ -85,6 +87,7 @@ describe('toBoardItem', () => {
       status: 'review',
       type: 'podcast',
       deadline: '2026-11-24',
+      publishedAt: null,
       archived: false,
       authorNames: ['Sara Nielsen', 'Anders Berg'],
       creatorName: 'Mette Holm',
@@ -179,7 +182,93 @@ describe('compareByDeadline (BOARD-2)', () => {
   })
 })
 
+describe('compareByPublished (BOARD-2, Published column)', () => {
+  const sort = (items: BoardItem[]) => titles([...items].sort(compareByPublished))
+
+  it('puts the newest publishedAt first and none last', () => {
+    const items = [
+      item({ title: 'Old', publishedAt: '2026-10-26T09:00:00.000Z' }),
+      item({ title: 'None', publishedAt: null }),
+      item({ title: 'New', publishedAt: '2026-11-18T08:30:00.000Z' }),
+      item({ title: 'Mid', publishedAt: '2026-11-17T23:59:59.999Z' }),
+    ]
+    expect(sort(items)).toEqual(['New', 'Mid', 'Old', 'None'])
+  })
+
+  it('ignores the deadline', () => {
+    const items = [
+      item({
+        title: 'Early deadline',
+        deadline: '2026-01-01',
+        publishedAt: '2026-11-01T00:00:00.000Z',
+      }),
+      item({
+        title: 'Late deadline',
+        deadline: '2026-12-31',
+        publishedAt: '2026-11-02T00:00:00.000Z',
+      }),
+    ]
+    expect(sort(items)).toEqual(['Late deadline', 'Early deadline'])
+  })
+
+  it('sorts equal values by title, then id', () => {
+    const at = '2026-11-18T08:30:00.000Z'
+    const b = item({ title: 'B', publishedAt: at })
+    const a2 = item({ title: 'A', publishedAt: at })
+    const a1 = item({ title: 'A', publishedAt: at, id: a2.id - 100 })
+    expect([b, a2, a1].sort(compareByPublished).map((i) => i.id)).toEqual([a1.id, a2.id, b.id])
+    expect(sort([item({ title: 'Y' }), item({ title: 'X' })])).toEqual(['X', 'Y'])
+  })
+})
+
 describe('buildBoard', () => {
+  it('sorts Published by publishedAt, the other columns by deadline (BOARD-2)', () => {
+    const board = buildBoard(
+      [
+        item({
+          title: 'P old',
+          status: 'published',
+          deadline: '2026-12-01',
+          publishedAt: '2026-11-01T10:00:00.000Z',
+        }),
+        item({
+          title: 'P new',
+          status: 'published',
+          deadline: '2026-10-01',
+          publishedAt: '2026-11-18T10:00:00.000Z',
+        }),
+        item({
+          title: 'P archived new',
+          status: 'published',
+          archived: true,
+          publishedAt: '2026-11-19T10:00:00.000Z',
+        }),
+        item({
+          title: 'P archived old',
+          status: 'published',
+          archived: true,
+          publishedAt: '2026-11-02T10:00:00.000Z',
+        }),
+        item({
+          title: 'D late',
+          status: 'draft',
+          deadline: '2026-12-01',
+          publishedAt: '2026-11-18T10:00:00.000Z',
+        }),
+        item({ title: 'D early', status: 'draft', deadline: '2026-11-20', publishedAt: null }),
+      ],
+      TODAY,
+    )
+    const column = (status: string) => board.columns.find((c) => c.status === status)
+    expect(titles(column('published')?.items ?? [])).toEqual([
+      'P new',
+      'P old',
+      'P archived new',
+      'P archived old',
+    ])
+    expect(titles(column('draft')?.items ?? [])).toEqual(['D early', 'D late'])
+  })
+
   it('gives 4 empty columns for no items (BOARD-1)', () => {
     expect(buildBoard([], TODAY)).toEqual({
       columns: [

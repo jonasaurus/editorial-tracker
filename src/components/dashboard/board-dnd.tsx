@@ -212,7 +212,7 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
       focusId.current = id
 
       startTransition(async () => {
-        addOptimistic({ id, status: to })
+        addOptimistic({ id, status: to, at: new Date().toISOString() })
         let result: ItemActionResult
         // LIVE-2: no live refresh while the move is pending.
         const releaseMove = pause('move')

@@ -14,6 +14,7 @@ function item(change: Partial<BoardItem> = {}): BoardItem {
     type: 'article',
     status: 'draft',
     deadline: null,
+    publishedAt: null,
     archived: false,
     authorNames: [],
     creatorName: null,

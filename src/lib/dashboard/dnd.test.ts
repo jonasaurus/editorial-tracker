@@ -9,10 +9,12 @@ import {
   applyMove,
   canDropOn,
   canMoveItem,
+  getDropIndex,
   getMoveError,
 } from './dnd'
 
 const TODAY = '2026-11-19'
+const AT = '2026-11-19T21:00:00.000Z'
 
 let nextId = 1
 function item(change: Partial<BoardItem> = {}): BoardItem {
@@ -22,6 +24,7 @@ function item(change: Partial<BoardItem> = {}): BoardItem {
     type: 'article',
     status: 'draft',
     deadline: null,
+    publishedAt: null,
     archived: false,
     authorNames: [],
     creatorName: null,
@@ -65,10 +68,10 @@ describe('applyMove', () => {
     const b = item({ status: 'idea' })
     const items = [a, b]
 
-    const result = applyMove(items, { id: a.id, status: 'review' })
+    const result = applyMove(items, { id: a.id, status: 'review', at: AT })
 
     expect(result).not.toBe(items)
-    expect(result[0]).toEqual({ ...a, status: 'review' })
+    expect(result[0]).toEqual({ ...a, status: 'review', publishedAt: null })
     expect(result[0]).not.toBe(a)
     expect(result[1]).toBe(b)
   })
@@ -77,7 +80,7 @@ describe('applyMove', () => {
     const a = item({ status: 'draft' })
     const items = [a]
 
-    applyMove(items, { id: a.id, status: 'published' })
+    applyMove(items, { id: a.id, status: 'published', at: AT })
 
     expect(items).toEqual([a])
     expect(a.status).toBe('draft')
@@ -86,20 +89,88 @@ describe('applyMove', () => {
   it('gives an equal list for an unknown id', () => {
     const items = [item(), item()]
 
-    expect(applyMove(items, { id: -1, status: 'review' })).toEqual(items)
+    expect(applyMove(items, { id: -1, status: 'review', at: AT })).toEqual(items)
   })
 
   it('puts the item in the new column of the board', () => {
     const a = item({ status: 'draft', title: 'Moved' })
     const b = item({ status: 'draft', title: 'Stays' })
 
-    const board = buildBoard(applyMove([a, b], { id: a.id, status: 'review' }), TODAY)
+    const board = buildBoard(applyMove([a, b], { id: a.id, status: 'review', at: AT }), TODAY)
     const column = (status: ItemStatus) => board.columns.find((c) => c.status === status)
 
     expect(column('draft')?.items.map((i) => i.title)).toEqual(['Stays'])
     expect(column('review')?.items.map((i) => i.title)).toEqual(['Moved'])
     expect(column('draft')?.count).toBe(1)
     expect(column('review')?.count).toBe(1)
+  })
+})
+
+describe('applyMove: publishedAt (MODEL-2)', () => {
+  it('sets publishedAt to the drop time on a move to Published', () => {
+    const a = item({ status: 'review', publishedAt: '2026-01-01T00:00:00.000Z' })
+    expect(applyMove([a], { id: a.id, status: 'published', at: AT })[0]?.publishedAt).toBe(AT)
+  })
+
+  it('keeps publishedAt on a move to another status', () => {
+    const old = '2026-01-01T00:00:00.000Z'
+    const a = item({ status: 'published', publishedAt: old })
+    expect(applyMove([a], { id: a.id, status: 'review', at: AT })[0]?.publishedAt).toBe(old)
+  })
+
+  it('puts the item first in Published (BOARD-2)', () => {
+    const a = item({ status: 'review', title: 'Moved' })
+    const b = item({ status: 'published', title: 'Older', publishedAt: '2026-11-18T10:00:00.000Z' })
+    const board = buildBoard(applyMove([a, b], { id: a.id, status: 'published', at: AT }), TODAY)
+    const published = board.columns.find((c) => c.status === 'published')
+    expect(published?.items.map((i) => i.title)).toEqual(['Moved', 'Older'])
+  })
+})
+
+describe('getDropIndex (BOARD-2, design-system "Drop targets")', () => {
+  const column = (status: ItemStatus, items: BoardItem[]) => {
+    const built = buildBoard(items, TODAY).columns.find((c) => c.status === status)
+    if (!built) throw new Error('no column')
+    return built
+  }
+  const review = column('review', [
+    item({ status: 'review', title: 'B', deadline: '2026-11-20' }),
+    item({ status: 'review', title: 'D', deadline: '2026-11-25' }),
+    item({ status: 'review', title: 'F', deadline: null }),
+    item({ status: 'review', title: 'Archived', deadline: '2026-11-01', archived: true }),
+  ])
+  const dragged = (change: Partial<BoardItem>) => item({ status: 'draft', ...change })
+
+  it('gives the sorted place among the active items', () => {
+    expect(getDropIndex(review, dragged({ deadline: '2026-11-19' }))).toBe(0)
+    expect(getDropIndex(review, dragged({ deadline: '2026-11-22' }))).toBe(1)
+    expect(getDropIndex(review, dragged({ deadline: '2026-11-30' }))).toBe(2)
+  })
+
+  it('puts an item with no deadline after the active items, before the archived ones', () => {
+    expect(getDropIndex(review, dragged({ title: 'Z', deadline: null }))).toBe(3)
+    expect(getDropIndex(review, dragged({ title: 'A', deadline: null }))).toBe(2)
+  })
+
+  it('breaks ties by title', () => {
+    expect(getDropIndex(review, dragged({ title: 'C', deadline: '2026-11-20' }))).toBe(1)
+    expect(getDropIndex(review, dragged({ title: 'A', deadline: '2026-11-20' }))).toBe(0)
+  })
+
+  it('gives 0 for an empty column and a column with only archived items', () => {
+    expect(getDropIndex(column('idea', []), dragged({ deadline: '2026-11-22' }))).toBe(0)
+    const archivedOnly = column('idea', [
+      item({ status: 'idea', archived: true, deadline: '2026-01-01' }),
+    ])
+    expect(getDropIndex(archivedOnly, dragged({ deadline: '2026-12-01' }))).toBe(0)
+  })
+
+  it('gives 0 in Published: the new publishedAt is the newest', () => {
+    const published = column('published', [
+      item({ status: 'published', publishedAt: '2026-11-18T10:00:00.000Z' }),
+      item({ status: 'published', publishedAt: null }),
+    ])
+    expect(getDropIndex(published, dragged({ deadline: null }))).toBe(0)
   })
 })
 
