@@ -42,7 +42,7 @@ A small newsroom plans its content in the Editorial Tracker. An item (an article
 
 "Own item" means: the user is `createdBy`, or the user is in `authors`.
 
-- **PERM-1** A contributor can read only own items. This applies to the list, to a single item and to every API (REST, GraphQL, Local API, Admin panel).
+- **PERM-1** A contributor can read only own items. This applies to the list, to a single item and to every API (REST, Local API, Admin panel).
 - **PERM-2** A contributor can update only own items that are not published.
 - **PERM-3** Only an editor can set the status to `published`, or change the status of a published item (unpublish).
 - **PERM-4** A contributor can set the status to `idea`, `draft` or `review`, in any order. An editor can set any status, in any order.
@@ -154,7 +154,7 @@ Pattern: the state, then the next step.
 ## 7. API
 
 - **API-1** The Payload REST API gives the routes: list, create, read, update (`PATCH /api/content-items/:id`, also for status).
-- **API-2** The same rules apply to REST, GraphQL, the Local API and the Admin panel. Collection access returns a `Where` query (row scope). Value rules (PERM-3, PERM-4, PERM-6, AUTH-2) are in a collection `beforeChange` hook that compares the new value with the old document and throws `APIError(…, 403)`.
+- **API-2** The same rules apply to REST, the Local API and the Admin panel. GraphQL is off. Collection access returns a `Where` query (row scope). Value rules (PERM-3, PERM-4, PERM-6, AUTH-2) are in a collection `beforeChange` hook that compares the new value with the old document and throws `APIError(…, 403)`.
 - **API-3** The row scope for "own item" is `createdBy equals <user>` OR `authors equals <user>`. On `authors` (many users), `equals` matches when one of the authors is the user. `in` and `contains` give the same result. Do not use `not_equals` or `not_in` on `authors`: they compare each author on its own, so an item with 2 authors also matches.
 
 ## 8. Non-goals (later)

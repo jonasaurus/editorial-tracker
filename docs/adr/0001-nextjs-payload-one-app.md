@@ -13,6 +13,6 @@ The app needs login, two roles, access rules, a data model and a custom dashboar
 
 ## Consequences
 
-- Payload gives auth, users, roles and access control. The same rules apply to REST, GraphQL, the Local API and the Admin panel.
+- Payload gives auth, users, roles and access control. The same rules apply to REST, the Local API and the Admin panel. GraphQL is off (spec API-2).
 - The frontend has its own layout and styles, so Tailwind does not change the Admin panel.
 - SQLite is not for serverless hosting. A move to Postgres is a change of adapter (`@payloadcms/db-postgres`) and a connection string.

@@ -19,6 +19,8 @@ export default buildConfig({
     },
   },
   collections: [Users, ContentItems],
+  // The app uses the Local API and REST only (spec API-2).
+  graphQL: { disable: true },
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

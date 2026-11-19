@@ -16,4 +16,4 @@ Contributors may see and change only their own items, and only editors may publi
 
 - The UI only mirrors the rules (locks, tooltips). It is not the security layer.
 - A rejected change returns a clear 403. The UI shows it as an error toast.
-- Hooks run for REST, GraphQL, the Admin panel and the Local API, so there is one place for each rule.
+- Hooks run for REST, the Admin panel and the Local API (GraphQL is off), so there is one place for each rule.
