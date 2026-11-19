@@ -13,6 +13,6 @@ The UI needs accessible components and a custom look (sand, ink, square corners,
 
 ## Consequences
 
-- The design file and the code use the same token names.
+- `docs/design-system.md` §1 and the code use the same token names.
 - Component code stays close to upstream shadcn. Updates are easy.
 - Every colour in the code is a token. No literal hex values in components.

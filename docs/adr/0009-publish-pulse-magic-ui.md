@@ -6,7 +6,7 @@ There are two ways to publish: select the Published step and press "Publish", or
 
 ## Decision
 
-- Use the Magic UI Pulsating Button (variant `pulse`) for the armed Publish button.
+- Copy the keyframes and values of the Magic UI Pulsating Button (variant `pulse`) into one utility, `animate-publish-pulse`. Do not install the component. The armed Publish button is a `Button` with this utility.
 - Use the same keyframes and colour on the Published column during a drag: one shared utility, `animate-publish-pulse`.
 - Values: a crisp ring from 0 to 8px and back, 1.5s, publish orange at 50%.
 - Add reduced-motion support (the component has none): no animation, a static 4px ring.

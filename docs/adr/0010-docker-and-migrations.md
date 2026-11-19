@@ -16,6 +16,6 @@ A reviewer must be able to run the app from a fresh clone, without Node or pnpm.
 
 ## Consequences
 
-- After a change to a collection, run `pnpm payload migrate:create <name>` and commit the migration, together with `pnpm generate:types`.
-- A migration that is missing shows only in production (Docker), not in development. The Docker test in the checklist finds it.
+- After a change to a collection, run `pnpm payload migrate:create <name>` and commit the migration, together with `pnpm generate:types` and `pnpm generate:importmap`.
+- A migration that is missing shows only in production (Docker), not in development. Run `docker compose up --build` after a schema change to find it. CI only builds the image.
 - A move to Postgres needs new migrations for the Postgres adapter.

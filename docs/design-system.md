@@ -40,7 +40,7 @@ The status colours and the red come from the brand orange in OKLCH: the hue is r
 - Spacing: the Tailwind default scale (4px base).
 - Corners: square (radius 0). The only pill is the "Archived" label (outline).
 - Shadows: only on the dialog, popovers, the dragged card and the toast.
-- Board cards: one height, 112px. The title shows 2 lines or fewer; a longer title ends with an ellipsis (…). The type, deadline and people lines are one line each, cut with an ellipsis. The people line sits at the bottom of the card. The drop slot (§4) has the same height.
+- Board cards: one height, 112px. The title shows 2 lines or fewer; a longer title ends with an ellipsis (…). The top line (type, then deadline or published date) and the people line are one line each. The type and the people text end with an ellipsis; the date is never cut. The people line sits at the bottom of the card. The drop slot (§4) has the same height.
 - Control height: 40px in dialogs and on the login screen; 32px (`size="sm"`) in the app bar and on the board.
 
 ## 3. Status
@@ -56,7 +56,7 @@ The status colours and the red come from the brand orange in OKLCH: the hue is r
 - Selected step: filled with its status colour, white semibold label. Exception: Draft (gold) has an ink label.
 - Finished steps: a check icon and a muted label.
 - Locked step: `--color-subtle` fill, a lock icon, muted label, tooltip.
-- Archived (read-only): the selected step uses its status colour at 50% opacity, with an ink label. The other labels, checks and borders use the disabled greys.
+- Read-only (archived, or published for a contributor): the selected step uses its status colour at 50% opacity, with an ink label. The other labels, checks and borders use the disabled greys.
 
 ## 4. Orange (brand accent)
 
@@ -77,7 +77,7 @@ Orange means emphasis. Green means published. Use orange only for:
 
 The armed Publish button and the drop target (the Published column) use **one** animation, so the two ways to publish feel related.
 
-- Base: Magic UI Pulsating Button (`pnpm dlx shadcn@latest add @magicui/pulsating-button`), variant `pulse`.
+- Values: from the Magic UI Pulsating Button (variant `pulse`). The component is not installed: the keyframes are in `globals.css`.
 - A crisp `box-shadow` ring grows from 0 to 8px and back in 1.5s, in publish orange at 50%.
 - One shared utility (`animate-publish-pulse`) for the button and the column.
 - Reduced motion: no animation; a static 4px ring.
@@ -94,6 +94,8 @@ One state function and one formatter (spec DL-1 to DL-5).
 | Overdue | 17 Nov · 2 days overdue | 17 Nov 2026 · 2 days overdue | 600, destructive |
 | No deadline | No deadline | empty field, placeholder "No deadline" | 400, muted |
 | Published or archived | 13 Nov | 13 Nov 2026 | 400, muted (dialog value stays ink) |
+
+On a board card, a published item shows "Published 12 Nov" or "Published today" instead of the deadline (BOARD-3). The list shows the deadline.
 
 - The date comes first, then the qualifier. No "Due" prefix.
 - The short form shows the year only when it is not the current year.
@@ -141,7 +143,7 @@ Use one word for one thing.
 | Roles | Editor, Contributor | admin (as a role) |
 | The Payload admin | Admin panel | Admin |
 
-Buttons are verbs: New item, Create item, Save changes, Publish, Archive, Unarchive, Close, Cancel, Clear filters, Log in, Log out.
+Buttons are verbs: New item, Create item, Save changes, Publish, Archive, Unarchive, Close, Cancel, Discard changes, Remove deadline, Clear filters, Log in, Log out.
 
 Text style: short sentences, simple words. An error says what is wrong, then what to do. An empty state says the state, then the next step.
 
@@ -149,7 +151,7 @@ Text style: short sentences, simple words. An error says what is wrong, then wha
 
 `lucide-react`, 16px (14px in small controls), stroke 2, round caps and joins.
 
-Used: `Columns4` (Board), `List`, `Plus`, `ChevronDown`, `User`, `ArrowUpRight`, `X`, `Check`, `Lock`, `Calendar`, `Archive`, `ArrowRight`, `ArrowDown`, `ArrowUp`, `CircleAlert`.
+Used: `Columns4` (Board), `List`, `Plus`, `ChevronDown`, `User`, `ArrowUpRight`, `X`, `Check`, `Lock`, `Calendar`, `Archive`, `ArrowRight`, `ArrowDown`, `ArrowUp`, `CircleAlert`, `ChevronLeft`, `ChevronRight` (calendar), `ChevronUp` (select).
 
 ## 10. Components (shadcn/ui)
 
@@ -157,14 +159,18 @@ Used: `Columns4` (Board), `List`, `Plus`, `ChevronDown`, `User`, `ArrowUpRight`,
 |---|---|
 | Buttons | `Button` (default, outline, ghost; `size="sm"` in the app bar) |
 | User menu | `DropdownMenu` |
-| Type and Author filters | `Select` or `DropdownMenu`, `variant="ghost" size="sm"` |
-| Item dialog, Not found | `Dialog` (680px; 520px for messages) |
+| Type and Author filters | `DropdownMenu` with radio items; ghost `size="sm"` trigger |
+| Show archived | `Checkbox` |
+| Item dialog, Not found | Radix `Dialog` primitive, no portal, so the dialog is in the server HTML (ITEM-1). 680px; 520px for messages |
+| Confirm (discard, archive) | `AlertDialog` |
+| Type field | `Select` |
+| Login fields | `Input` + `Label` |
 | Authors | Chips + `DropdownMenu` with checkbox items (a checkable list, no search field). The menu stays open after each change. It opens under the whole field (left edges aligned). The check is on the left |
 | Deadline | Date picker (`Popover` + `Calendar`) |
 | List view | `Table` (plain, server-sorted); the status tabs are a `<nav>` of links |
 | Toast | `Sonner` |
 | Tooltip | `Tooltip` |
-| Publish pulse | Magic UI `PulsatingButton` |
+| Publish pulse | `animate-publish-pulse` utility (§4) on a `Button` |
 
 ## 11. Layout
 

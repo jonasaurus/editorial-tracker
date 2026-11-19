@@ -11,8 +11,8 @@ The app has its own login page (`/login`, spec LOGIN-1 to LOGIN-4). The Admin pa
 - Logout deletes the session row (`logoutOperation`), so the old token stops working. Then it always deletes the cookie.
 - Two checks:
   - The proxy only checks that the cookie exists, for `GET` and `HEAD`. It redirects to `/login?next=<url>`. It does not touch Server Action POSTs, because a 307 keeps the POST and the action would fail. It never redirects away from `/login`, because an expired cookie would cause a loop.
-  - The real check is `getUser()` (`payload.auth`) in each page and each Server Action.
-- `next` must be a path on this site. Other values become `/`.
+  - The real check is `getSession()` (`payload.auth`, through `requireSession` or `getUser`) in each page and each Server Action.
+- `next` must be a path on this site, and not `/login`, `/api` or `/admin`. Other values become `/`.
 - A session lasts 8 hours (one work day). Payload does not refresh the token on the server.
 - `secure` comes from `COOKIE_SECURE` (default off), because Docker serves the app over plain http.
 - A locked account (LOGIN-4) gives the same text as a wrong password (LOGIN-2).
@@ -20,7 +20,7 @@ The app has its own login page (`/login`, spec LOGIN-1 to LOGIN-4). The Admin pa
 
 ## Consequences
 
-- The auth operations (login, auth, logout) cannot pass `user`. They are the only exception to PERM-8.
+- The auth operations (login, auth, logout) cannot pass `user`. They are the only exception to PERM-8 in request code. System code (the seed, the first-user role default) runs without a user.
 - After 8 hours the user must log in again. Unsaved edits in the dialog are lost.
 - An unknown email gives the answer faster than a wrong password, because Payload skips the password hash. A timing attack can find out which emails exist. We accept this for a small newsroom tool. The REST login (`/api/users/login`) also shows Payload's own lockout message.
 - Behind HTTPS, set `COOKIE_SECURE=true`.

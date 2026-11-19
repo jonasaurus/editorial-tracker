@@ -56,7 +56,7 @@ On the first start, the app seeds the demo data when the database has no users.
 
 | Variable | Use |
 |---|---|
-| `DATABASE_URL` | The SQLite file. Default: `file:./editorial-tracker.db`. |
+| `DATABASE_URL` | The SQLite file. Value in `.env.example`: `file:./editorial-tracker.db`. |
 | `PAYLOAD_SECRET` | The secret for auth tokens. Make one with `openssl rand -hex 32`. |
 | `SEED_ON_START` | `false` turns off the seed on first start. Default: on. |
 | `COOKIE_SECURE` | `true` sends the session cookie only over HTTPS. Set it behind HTTPS. Default: off (Docker uses plain http). |
@@ -78,6 +78,7 @@ A session lasts 8 hours. After 5 failed logins, an account is locked for 10 minu
 | Command | Does |
 |---|---|
 | `pnpm dev` | Start the app in development mode |
+| `pnpm devsafe` | Delete `.next/`, then start the app in development mode |
 | `pnpm build`, `pnpm start` | Build and start the production app |
 | `pnpm check` | Run all checks: typecheck, lint, format check, audit, tests. The pre-commit hook runs it. |
 | `pnpm test` | Run the unit and integration tests (Vitest) |
@@ -86,6 +87,7 @@ A session lasts 8 hours. After 5 failed logins, an account is locked for 10 minu
 | `pnpm format`, `pnpm format:check` | Format the code, or check the format (Prettier) |
 | `pnpm audit` | Check the dependencies for known advisories (moderate and higher) |
 | `pnpm generate:types` | Generate `src/payload-types.ts` after a change to a collection |
+| `pnpm generate:importmap` | Generate the Admin panel import map after a change to a collection |
 | `pnpm payload migrate:create <name>` | Create a database migration after a change to a collection |
 | `pnpm seed` | Delete all users and items, then seed the demo data (development only) |
 
@@ -95,8 +97,8 @@ A session lasts 8 hours. After 5 failed logins, an account is locked for 10 minu
 - **Login.** A Server Action logs in with Payload and sets the `payload-token` cookie. The app and the Admin panel share the session. Logout ends the session on the server. See [ADR 0011](docs/adr/0011-auth-and-session.md).
 - **Dashboard.** The URL holds the view, the filters and the list state (`?view=list`, `?type=article`, `?author=<id>`, `?archived=1`, `?status=draft`, `?sort=title&dir=desc`, `?item=12`, `?item=new`), so you can share a filtered view. The server loads the items as the logged-in user, builds the board and sorts the list. On small screens the list is the only view. The counts and the cards use the same deadline rule.
 - **Item view.** The item opens in a dialog over the dashboard, with its id in the URL. Server Actions save the item as the logged-in user; the same server rules apply. See [ADR 0004](docs/adr/0004-item-dialog-in-url.md).
-- **Live updates.** Every 5 seconds, and when the window gets focus, the dashboard asks the server for a small version of the items that the user can read. When the version changes, the page loads the new data. The check pauses while the tab is hidden, during unsaved edits and during a drag. See [ADR 0008](docs/adr/0008-live-updates-polling.md).
-- **Publishing.** In the item dialog, select the Published step. The button changes to "Publish" and pulses. A card that you drag to Published shows the same pulse. See [ADR 0009](docs/adr/0009-publish-pulse-magic-ui.md).
+- **Live updates.** Every 5 seconds, when the window gets focus and when the tab becomes visible, the dashboard asks the server for a small version of the items that the user can read. When the version changes, the page loads the new data. The check pauses while the tab is hidden, during unsaved edits or an open confirm, during a drag and while a move is pending. See [ADR 0008](docs/adr/0008-live-updates-polling.md).
+- **Publishing.** In the item dialog, select the Published step. The button changes to "Publish" and pulses. While you drag a card over Published, the column shows the same pulse. See [ADR 0009](docs/adr/0009-publish-pulse-magic-ui.md).
 - **Archive.** Archive replaces delete. An archived item keeps its status, is read-only and is hidden unless "Show archived" is on.
 - **Deadlines.** Plain dates, one state function, one formatter. See [ADR 0007](docs/adr/0007-deadlines-plain-dates.md).
 

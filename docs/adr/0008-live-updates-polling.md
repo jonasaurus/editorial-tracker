@@ -10,7 +10,8 @@ The dashboard must show changes from other users. Payload has no built-in realti
 - The version is today's date (Europe/Copenhagen), the item count and the latest `updatedAt` of the items that the user can read. The endpoint reads as the user, so a contributor's version follows own items only.
 - The page also reads the version when it renders and gives it to the component. When the endpoint gives another version, the component calls `router.refresh()`.
 - The component does not poll while the tab is hidden, while the dialog has unsaved edits or an open confirm, during a drag, and while a move is pending. It also does not poll while its own refresh is pending.
-- When the endpoint gives 401, the component refreshes once and stops. The page then opens the login page (ERR-5).
+- When the endpoint gives 401, the component refreshes once and stops until the next focus or visible event. The page then opens the login page (ERR-5).
+- When the page does not render a new version within 10 seconds after a refresh, the component polls again.
 
 ## Why an endpoint, not a Server Action
 
