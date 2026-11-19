@@ -108,11 +108,11 @@ The dashboard is the only page. One app bar holds: the mark, the user menu, the 
 
 ### 6.5 List view
 
-- **LIST-1** Status tabs (All, Idea, Draft, Review, Published) with counts. The tabs are links that change the URL.
+- **LIST-1** Status tabs (All, Idea, Draft, Review, Published) with counts. The tabs are links that change the URL (`?status=draft`; no `status` is All). A count follows the Type and Author filters and counts items that are not archived. While "Show archived" is on, a tab with archived items also shows "· n archived" (the same as the column count).
 - **LIST-2** Columns: Title, Type, Status, Authors, Created by, Deadline.
-- **LIST-3** Sort by a column header. The sort is in the URL (`?sort=…&dir=…`). The server sorts. Default: deadline ascending, no deadline last.
-- **LIST-4** Archived rows (with "Show archived" on) are greyed. There is no "Archived" tab.
-- **LIST-5** On small screens, the list view is the only view. There is no drag and drop on mobile.
+- **LIST-3** Sort by a column header. The sort is in the URL (`?sort=title|type|status|authors|creator|deadline&dir=asc|desc`). The server sorts. Default: deadline ascending, no deadline last. A click on the sorted column changes the direction. A click on another column sorts it ascending. Empty values (no deadline, no authors, no creator) come last in both directions. Status sorts in the workflow order. Authors sort by the names in their stored order. Equal values: sort by deadline, then title.
+- **LIST-4** Archived rows (with "Show archived" on) are greyed, show an "Archived" label, and come after the other rows in the same order. There is no "Archived" tab.
+- **LIST-5** On small screens, the list view is the only view. There is no drag and drop on mobile. The Board/List switch is hidden, and `?view=board` shows the list.
 
 ### 6.6 Item dialog
 
@@ -136,8 +136,8 @@ The item dialog is the content view. It is a dialog over the dashboard, not a se
 Pattern: the state, then the next step.
 
 - **EMPTY-1** No items at all (the user can see no item, archived items included): "No items yet" / "Create the first item with “New item” at the top right." On the board, one box shows under the column headings.
-- **EMPTY-2** Empty column: Idea "No ideas" / "Add one with New item." · Draft "No drafts" / "Move an idea here when you start writing." · Review "Nothing to review" / "Move a draft here when it is ready for an editor." · Published "Nothing published yet" / "Move an item to Review. An editor publishes it."
-- **EMPTY-3** Filters with no results: "No items match these filters" / "Change the filters, or clear them to see all 14 items." + "Clear filters". "Clear filters" turns off Type, Author and Show archived, and keeps the view.
+- **EMPTY-2** Empty column: Idea "No ideas" / "Add one with New item." · Draft "No drafts" / "Move an idea here when you start writing." · Review "Nothing to review" / "Move a draft here when it is ready for an editor." · Published "Nothing published yet" / "Move an item to Review. An editor publishes it." In the list, an empty status tab shows: Idea "No ideas" / "Add one with New item." · Draft "No drafts" / "Set an idea to Draft when you start writing." · Review "Nothing to review" / "Set a draft to Review when it is ready for an editor." · Published "Nothing published yet" / "Set an item to Review. An editor publishes it." An empty All tab (only archived items, "Show archived" off): "No active items" / "Turn on “Show archived” to see archived items."
+- **EMPTY-3** Filters with no results: "No items match these filters" / "Change the filters, or clear them to see all 14 items." + "Clear filters". "Clear filters" turns off Type, Author and Show archived, and keeps the view, the status tab and the sort.
 
 ### 6.8 Errors and feedback
 

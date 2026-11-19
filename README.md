@@ -93,7 +93,7 @@ A session lasts 8 hours. After 5 failed logins, an account is locked for 10 minu
 
 - **Permissions.** A contributor sees and changes only own items (creator or author). Only an editor can publish. Collection access gives the row scope, and a `beforeChange` hook checks values, so the rules also hold for the REST API. See [ADR 0003](docs/adr/0003-permissions-server-side.md).
 - **Login.** A Server Action logs in with Payload and sets the `payload-token` cookie. The app and the Admin panel share the session. Logout ends the session on the server. See [ADR 0011](docs/adr/0011-auth-and-session.md).
-- **Dashboard.** The URL holds the view and the filters (`?view=list`, `?type=article`, `?author=<id>`, `?archived=1`), so you can share a filtered view. The server loads the items as the logged-in user and builds the board. The counts and the cards use the same deadline rule.
+- **Dashboard.** The URL holds the view, the filters and the list state (`?view=list`, `?type=article`, `?author=<id>`, `?archived=1`, `?status=draft`, `?sort=title&dir=desc`), so you can share a filtered view. The server loads the items as the logged-in user, builds the board and sorts the list. On small screens the list is the only view. The counts and the cards use the same deadline rule.
 - **Item view.** The item opens in a dialog over the dashboard, with its id in the URL. See [ADR 0004](docs/adr/0004-item-dialog-in-url.md).
 - **Publishing.** Select the Published step, and the button changes to "Publish". Dragging a card to Published shows the same pulse. See [ADR 0009](docs/adr/0009-publish-pulse-magic-ui.md).
 - **Archive.** Archive replaces delete. An archived item keeps its status, is read-only and is hidden unless "Show archived" is on.
