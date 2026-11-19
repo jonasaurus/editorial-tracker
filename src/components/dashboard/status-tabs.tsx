@@ -31,7 +31,8 @@ export function StatusTabs({ tabs, current }: Props) {
                 scroll={false}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'relative flex items-baseline gap-2 pb-2 text-2xl tracking-[-0.02em] whitespace-nowrap outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50',
+                  // 1px at the top, 7px at the bottom: the text sits 14px above the rule (design 02a).
+                  'relative flex items-baseline gap-2 pt-px pb-[7px] text-2xl tracking-[-0.02em] whitespace-nowrap outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50',
                   active
                     ? 'text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-publish'
                     : 'text-muted-foreground',

@@ -1,5 +1,6 @@
 import { Archive, ArrowDown, ArrowUp } from 'lucide-react'
 import Link from 'next/link'
+import { Fragment } from 'react'
 
 import { StatusMarker } from '@/components/dashboard/status-marker'
 import { DeadlineText } from '@/components/deadline-text'
@@ -16,14 +17,18 @@ import { LIST_SORTS, type ListSort, type SortDir } from '@/lib/dashboard/params'
 import { STATUS_LABELS, TYPE_LABELS } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
-/** The column header text and width (design 02a-list). Widths include 12px padding each side. */
+/**
+ * The column header text and width (design 02a-list). Widths include 12px padding each side.
+ * Below `xl`, Type, Status, Authors and Created by are only as wide as their text (`w-px`). The
+ * authors wrap after a comma. The title gets the rest of the width.
+ */
 const columns: Record<ListSort, { label: string; className?: string }> = {
   // The title wraps; below this width the table scrolls in its box (small screens).
   title: { label: 'Title', className: 'min-w-[240px]' },
-  type: { label: 'Type', className: 'w-[120px]' },
-  status: { label: 'Status', className: 'w-[120px]' },
-  authors: { label: 'Authors', className: 'w-[220px]' },
-  creator: { label: 'Created by', className: 'w-[160px]' },
+  type: { label: 'Type', className: 'w-px xl:w-[120px]' },
+  status: { label: 'Status', className: 'w-px xl:w-[120px]' },
+  authors: { label: 'Authors', className: 'w-px xl:w-[220px]' },
+  creator: { label: 'Created by', className: 'w-px xl:w-[160px]' },
   // design-system §5: the Deadline column is 200px wide (plus the cell padding).
   deadline: { label: 'Deadline', className: 'w-[224px]' },
 }
@@ -128,8 +133,20 @@ function ItemRow({ item, today, href }: { item: BoardItem; today: string; href: 
           {STATUS_LABELS[item.status]}
         </span>
       </TableCell>
-      <TableCell className={cn(cell, archived ? 'text-muted-foreground' : 'text-foreground')}>
-        {item.authorNames.join(', ')}
+      <TableCell
+        className={cn(
+          cell,
+          'whitespace-normal',
+          archived ? 'text-muted-foreground' : 'text-foreground',
+        )}
+      >
+        {/* A name does not break: the authors wrap only after a comma. */}
+        {item.authorNames.map((name, index) => (
+          <Fragment key={index}>
+            {index > 0 && ', '}
+            <span className="whitespace-nowrap">{name}</span>
+          </Fragment>
+        ))}
       </TableCell>
       <TableCell className={cn(cell, 'text-muted-foreground')}>{item.creatorName}</TableCell>
       <TableCell className={cell}>
