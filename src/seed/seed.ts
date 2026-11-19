@@ -1,5 +1,6 @@
 import type { Payload } from 'payload'
 
+import { addDays, todayInCopenhagen } from '@/lib/deadline'
 import type { ContentItem, User } from '@/payload-types'
 
 /** The password of every demo user (ROLE-4). */
@@ -105,17 +106,6 @@ const ITEMS: SeedItem[] = [
     deadlineInDays: null,
   },
 ]
-
-/** DL-1: today as `YYYY-MM-DD` in Europe/Copenhagen. The `en-CA` locale gives this format. */
-const todayInCopenhagen = (): string =>
-  new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen' }).format(new Date())
-
-/** Adds days to a plain date. UTC math, so daylight saving time has no effect. */
-function addDays(day: string, days: number): string {
-  const date = new Date(`${day}T00:00:00.000Z`)
-  date.setUTCDate(date.getUTCDate() + days)
-  return date.toISOString().slice(0, 10)
-}
 
 /**
  * Seeds the demo users and items (ROLE-4) when the database has no users.
