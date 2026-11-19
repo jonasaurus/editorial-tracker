@@ -1,6 +1,15 @@
-import type { Access, CollectionConfig, Where } from 'payload'
+import {
+  APIError,
+  type Access,
+  type CollectionBeforeChangeHook,
+  type CollectionConfig,
+  type Where,
+} from 'payload'
+
+import type { ContentItem } from '@/payload-types'
 
 import { isEditor, isEditorUser, isLoggedIn } from '../../access'
+import { checkItemChange } from './rules'
 
 /** "Own item": the user is the creator or an author (spec §4). */
 const ownItems = (userId: number): Where => ({
@@ -24,11 +33,35 @@ const canUpdate: Access = ({ req: { user } }) => {
 /** The server sets these fields. A request cannot set or change them. */
 const serverOnly = { create: () => false, update: () => false }
 
+/**
+ * A3: the value rules run for every save (REST, GraphQL, Local API, Admin panel).
+ * A rejected change is not saved, and the client gets 403 with the message.
+ */
+const enforceValueRules: CollectionBeforeChangeHook<ContentItem> = ({
+  data,
+  operation,
+  originalDoc,
+  req,
+}) => {
+  const result = checkItemChange({
+    user: req.user ?? null,
+    data,
+    // On create, Payload passes an empty object, not undefined.
+    originalDoc: operation === 'update' ? originalDoc : undefined,
+    now: new Date().toISOString(),
+  })
+  if (!result.ok) throw new APIError(result.message, 403)
+  return result.data
+}
+
 export const ContentItems: CollectionConfig = {
   slug: 'content-items',
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'status', 'type', 'deadline', 'archived'],
+  },
+  hooks: {
+    beforeChange: [enforceValueRules],
   },
   access: {
     read: canRead,
