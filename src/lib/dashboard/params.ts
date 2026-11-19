@@ -1,4 +1,4 @@
-import { type ItemStatus, type ItemType, type Role, STATUSES, TYPES } from '@/lib/items'
+import { isItemStatus, type ItemStatus, type ItemType, type Role, TYPES } from '@/lib/items'
 
 export type DashboardView = 'board' | 'list'
 
@@ -52,10 +52,6 @@ function first(value: string | string[] | undefined): string | undefined {
 
 function isItemType(value: string | undefined): value is ItemType {
   return TYPES.some((type) => type === value)
-}
-
-function isItemStatus(value: string | undefined): value is ItemStatus {
-  return STATUSES.some((status) => status === value)
 }
 
 function isListSort(value: string | undefined): value is ListSort {

@@ -1,5 +1,5 @@
 import { isPlainDate } from '@/lib/deadline'
-import { STATUSES, TYPES, type ItemStatus, type ItemType } from '@/lib/items'
+import { isItemStatus, TYPES, type ItemType } from '@/lib/items'
 
 import type { FieldErrors, ItemInput } from './types'
 
@@ -7,9 +7,6 @@ export type ParsedInput = { ok: true; input: ItemInput } | { ok: false; errors: 
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
-
-const isStatus = (value: unknown): value is ItemStatus =>
-  STATUSES.some((status) => status === value)
 
 const isType = (value: unknown): value is ItemType => TYPES.some((type) => type === value)
 
@@ -40,7 +37,7 @@ export function parseItemInput(raw: unknown): ParsedInput {
   if (title === '') errors.title = 'Enter a title.'
 
   const { status, type } = value
-  if (!isStatus(status)) errors.status = 'Choose a status.'
+  if (!isItemStatus(status)) errors.status = 'Choose a status.'
   if (!isType(type)) errors.type = 'Choose a type.'
 
   const deadline = parseDeadline(value.deadline)
@@ -52,7 +49,7 @@ export function parseItemInput(raw: unknown): ParsedInput {
   // The checks repeat the conditions above, so TypeScript narrows each value.
   if (
     title === '' ||
-    !isStatus(status) ||
+    !isItemStatus(status) ||
     !isType(type) ||
     deadline === undefined ||
     authors === undefined
