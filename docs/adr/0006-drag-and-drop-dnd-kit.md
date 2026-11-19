@@ -17,6 +17,7 @@ Users drag a card to another column to change its status (spec DND-1 to DND-6). 
 - Keyboard dragging and live-region announcements come from the library.
 - Version 0.5.1 for `@dnd-kit/react` and `@dnd-kit/dom`. Keep both on the same version: the drag overlay checks the `Feedback` plugin class from `@dnd-kit/dom`.
 - The title link of the item is the drag handle. A mouse drag starts after 5px of movement. A click without movement opens the item.
+- The link keeps link semantics: it has `role="link"` and an empty `aria-roledescription`. Without them, the library sets `role="button"` and the role description "draggable".
 - The keyboard drag starts with Space, because Enter opens the item. The arrow keys move one column. Space or Enter drops. Escape or Tab cancels.
 - Every column is a drop target. The drop handler checks the rules (`canDropOn`). Reason: the library skips a column that does not accept the item, and the item can then drop in the next column.
 - The drop handler runs in `useDragDropMonitor`, not in the provider props. Reason: the provider runs its callbacks in a React transition, and the drop then waits for the server.
