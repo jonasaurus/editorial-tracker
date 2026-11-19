@@ -10,7 +10,7 @@ Deadline text and the overdue state appear on cards, in the list, in the dialog 
 - Compute `today` on the server, in Europe/Copenhagen, and pass it down.
 - One pure function decides the state: `getDeadlineState(item, today)` → `none | upcoming | today | overdue | done`.
 - One formatter makes the text: `formatDeadline(deadline, state, today, 'short' | 'long')`.
-- One component shows it: `<DeadlineText item variant />`.
+- One component shows it: `<DeadlineText item today variant />`. `today` comes from the server (DL-1).
 - Unit tests cover the edge cases (midnight, daylight saving time, the turn of the year).
 
 ## Consequences

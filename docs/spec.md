@@ -84,16 +84,16 @@ A small newsroom plans its content in the Editorial Tracker. An item (an article
 The dashboard is the only page. One app bar holds: the mark, the user menu, the counts, the filters, the Board/List switch and "New item".
 
 - **DASH-1** The view is in the URL: `?view=board` (default) or `?view=list`.
-- **DASH-2** Filters: Type, Author (editors only), Show archived. Filters are in the URL.
+- **DASH-2** Filters: Type, Author (editors only), Show archived. Filters are in the URL: `?type=article`, `?author=<user id>`, `?archived=1`. A value that is not valid has no effect.
 - **DASH-3** The Author filter matches `authors` OR `createdBy`.
-- **DASH-4** Counts follow the Type and Author filters, not the status. Format: "14 items · 2 overdue · 1 archived". Hide "· n overdue" when n is 0. With a filter that hides items: "0 of 14 items".
+- **DASH-4** Counts follow the Type and Author filters, not the status. Format: "14 items · 2 overdue · 1 archived". "n items" and "n overdue" count items that are not archived. Hide "· n overdue" when n is 0. "· n archived" shows only while "Show archived" is on, and only when n is more than 0. With a filter that hides items: "0 of 14 items" (14 = all items that are not archived, with no filters).
 - **DASH-5** Archived items are hidden unless "Show archived" is on.
 - **DASH-6** User menu: name and role (not clickable), "Admin panel ↗" (editors only, opens a new tab), "Log out".
 
 ### 6.3 Board view
 
 - **BOARD-1** Four columns, one per status. Each column shows its count.
-- **BOARD-2** Cards in a column are sorted by deadline, earliest first. Items with no deadline come last.
+- **BOARD-2** Cards in a column are sorted by deadline, earliest first. Items with no deadline come last. Archived cards come after the other cards, in the same order. Equal deadlines: sort by title.
 - **BOARD-3** A card shows: type, deadline, title, authors and creator ("Sara Nielsen · created by Mette Holm"). An archived card also shows an "Archived" label.
 - **BOARD-4** A click on a card opens the item dialog.
 
@@ -135,9 +135,9 @@ The item dialog is the content view. It is a dialog over the dashboard, not a se
 
 Pattern: the state, then the next step.
 
-- **EMPTY-1** No items at all: "No items yet" / "Create the first item with “New item” at the top right."
+- **EMPTY-1** No items at all (the user can see no item, archived items included): "No items yet" / "Create the first item with “New item” at the top right." On the board, one box shows under the column headings.
 - **EMPTY-2** Empty column: Idea "No ideas" / "Add one with New item." · Draft "No drafts" / "Move an idea here when you start writing." · Review "Nothing to review" / "Move a draft here when it is ready for an editor." · Published "Nothing published yet" / "Move an item to Review. An editor publishes it."
-- **EMPTY-3** Filters with no results: "No items match these filters" / "Change the filters, or clear them to see all 14 items." + "Clear filters".
+- **EMPTY-3** Filters with no results: "No items match these filters" / "Change the filters, or clear them to see all 14 items." + "Clear filters". "Clear filters" turns off Type, Author and Show archived, and keeps the view.
 
 ### 6.8 Errors and feedback
 
