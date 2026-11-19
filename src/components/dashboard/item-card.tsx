@@ -84,7 +84,7 @@ function ItemCardBody({ item, today, title }: Omit<Props, 'href'> & { title: Rea
       </div>
       <h3
         className={cn(
-          'mt-1.5 text-sm font-semibold',
+          'mt-1.5 text-sm font-semibold text-pretty',
           item.archived ? 'text-muted-foreground' : 'text-foreground',
         )}
       >
