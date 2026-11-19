@@ -93,8 +93,8 @@ The dashboard is the only page. One app bar holds: the mark, the user menu, the 
 ### 6.3 Board view
 
 - **BOARD-1** Four columns, one per status. Each column shows its count.
-- **BOARD-2** Cards in a column are sorted by deadline, earliest first. Items with no deadline come last. Archived cards come after the other cards, in the same order. Equal deadlines: sort by title.
-- **BOARD-3** A card shows: type, deadline, title, authors and creator ("Sara Nielsen · created by Mette Holm"). An archived card also shows an "Archived" label.
+- **BOARD-2** Cards in the Idea, Draft and Review columns are sorted by deadline, earliest first. Items with no deadline come last. Cards in the Published column are sorted by `publishedAt`, newest first. Items with no `publishedAt` come last. Archived cards come after the other cards, in the same order. Equal values: sort by title, then by id.
+- **BOARD-3** A card shows: type, deadline, title, authors and creator ("Sara Nielsen · created by Mette Holm"). A card in the Published column shows the published date ("Published 12 Nov" or "Published today") in place of the deadline. An archived card also shows an "Archived" label.
 - **BOARD-4** A click on a card opens the item dialog.
 
 ### 6.4 Drag and drop (board, desktop only)
@@ -113,6 +113,7 @@ The dashboard is the only page. One app bar holds: the mark, the user menu, the 
 - **LIST-3** Sort by a column header. The sort is in the URL (`?sort=title|type|status|authors|creator|deadline&dir=asc|desc`). The server sorts. Default: deadline ascending, no deadline last. A click on the sorted column changes the direction. A click on another column sorts it ascending. Empty values (no deadline, no authors, no creator) come last in both directions. Status sorts in the workflow order. Authors sort by the names in their stored order. Equal values: sort by deadline, then title.
 - **LIST-4** Archived rows (with "Show archived" on) are greyed, show an "Archived" label, and come after the other rows in the same order. There is no "Archived" tab.
 - **LIST-5** On small screens, the list view is the only view. There is no drag and drop on mobile. The Board/List switch is hidden, and `?view=board` shows the list.
+- **LIST-6** A click anywhere on a row opens the item dialog. The title is the only link, so each row is one tab stop.
 
 ### 6.6 Item dialog
 

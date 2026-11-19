@@ -7,6 +7,7 @@ Users drag a card to another column to change its status (spec DND-1 to DND-6). 
 ## Decision
 
 - Use `@dnd-kit/react` with one drop zone per column. No sortable lists.
+- Amended 2026-11-19: the drop slot shows where the card will land. The app computes this place from the BOARD-2 sort (`getDropIndex`). The user cannot choose a place in the column.
 - Pin the exact version, because the package is still 0.x.
 - Do not use community kanban wrappers. They use the older `@dnd-kit/core` and add sorting that we do not need.
 - The server action checks every drop. On a rejected drop, the card goes back and an error toast shows.

@@ -68,8 +68,8 @@ Orange means emphasis. Green means published. Use orange only for:
 ### Drop targets (board)
 
 - During a drag, the item stays in its column as a ghost: dashed border, muted text, no fill. The dragged copy tilts by 2° and has a shadow.
-- Over Published: the publish pulse, a light orange fill, an orange border, and a dashed orange slot "Drop to publish" at the top. The highlight is outside the column box, so the layout does not move.
-- Over another column: a neutral dashed slot "Move to <Status>" at the top. No orange.
+- Over Published: the publish pulse, a light orange fill, an orange border, and a dashed orange slot "Drop to publish" at the top (the newest published item is first, BOARD-2). The highlight is outside the column box, so the layout does not move.
+- Over another column: a neutral border outside the column box, and a neutral dashed slot "Move to <Status>" where the card will land (its sorted place, BOARD-2). No orange.
 - A column where the user cannot drop (a contributor and Published): a dashed slot with a lock icon and "Only editors can publish items", from the start of the drag. No pulse.
 
 ### Publish pulse
