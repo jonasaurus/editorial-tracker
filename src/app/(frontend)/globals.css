@@ -692,9 +692,9 @@
 
 /*
  * Publish pulse: one animation for the armed Publish button and the
- * drop target (Published column). Values from Magic UI Pulsating Button
- * (variant "pulse", 1.5s, 8px). TODO: confirm against the installed
- * component, then keep only one copy of the keyframes.
+ * drop target (Published column), ADR 0009. Values from the Magic UI
+ * Pulsating Button registry item (variant "pulse": 1.5s ease-out, ring
+ * from 0 to 8px at 50%, colour at 50%). This is the only copy.
  */
 @theme {
   --animate-publish-pulse: publish-pulse 1.5s ease-out infinite;
@@ -703,10 +703,10 @@
 @keyframes publish-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(252 114 48 / 0.5);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-publish) 50%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 8px rgb(252 114 48 / 0.5);
+    box-shadow: 0 0 0 8px color-mix(in oklab, var(--color-publish) 50%, transparent);
   }
 }
 
@@ -714,7 +714,7 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-publish-pulse {
     animation: none;
-    box-shadow: 0 0 0 4px rgb(252 114 48 / 0.5);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-publish) 50%, transparent);
   }
 }
 
