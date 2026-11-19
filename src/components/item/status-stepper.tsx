@@ -74,8 +74,10 @@ export function StatusStepper({ value, onChange, locked, readOnly, name }: Props
               <label
                 key={status}
                 style={shape(index)}
+                // No `min-w-0`: a step does not get narrower than its label. The steps have equal
+                // widths when they fit; a long label (for example with a check icon) takes more.
                 className={cn(
-                  'relative flex h-[38px] min-w-0 flex-1',
+                  'relative flex h-[38px] flex-1',
                   !readOnly && !isLocked && 'cursor-pointer',
                 )}
               >
