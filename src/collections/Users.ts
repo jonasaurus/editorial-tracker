@@ -14,7 +14,17 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
   },
-  auth: true,
+  auth: {
+    // 8 hours: one work day. Payload does not refresh the token on the server.
+    tokenExpiration: 8 * 60 * 60,
+    // LOGIN-4: Payload's defaults, set here so that the rule is visible.
+    maxLoginAttempts: 5,
+    lockTime: 10 * 60 * 1000,
+    cookies: {
+      // Off by default: Docker serves the app over plain http (see README).
+      secure: process.env.COOKIE_SECURE === 'true',
+    },
+  },
   access: {
     // ROLE-3: only editors open the Admin panel.
     admin: ({ req }) => isEditorUser(req.user),

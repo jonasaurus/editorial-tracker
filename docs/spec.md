@@ -77,6 +77,7 @@ A small newsroom plans its content in the Editorial Tracker. An item (an article
 - **LOGIN-1** Email and password. The server calls Payload `login` and sets the `payload-token` cookie as httpOnly.
 - **LOGIN-2** Wrong email or wrong password gives the same message: "The email or password is not correct." (Do not show which users exist.)
 - **LOGIN-3** A logged-in user who opens `/login` goes to `/`. A user without a session goes to `/login?next=<url>` and returns to `next` after login.
+- **LOGIN-4** After 5 failed logins, the account is locked for 10 minutes. A locked account gives the same message as LOGIN-2.
 
 ### 6.2 Dashboard (`/`)
 

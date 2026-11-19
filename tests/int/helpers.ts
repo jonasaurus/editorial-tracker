@@ -223,7 +223,7 @@ const restHandlers = {
 }
 
 /** Calls a REST route handler directly. No server runs. */
-async function rest(
+export async function rest(
   method: keyof typeof restHandlers,
   actor: Actor | null,
   path: string[],
