@@ -8,11 +8,11 @@ A small tool for a newsroom to plan content. Items (articles, videos, podcast ep
 
 - Login with two roles: Editor and Contributor.
 - Board view with one column per status. Drag a card to change its status.
-- List view with status tabs and server-side sorting.
+- List view with status tabs. The server sorts the list.
 - Item dialog to create, edit, publish and archive an item.
 - Filters for type, author and archived items. View, filters and sort are in the URL.
-- Deadlines with an overdue state, computed in Europe/Copenhagen.
-- Rules enforced on the server for the app, the REST API and the Admin panel.
+- Deadlines with an overdue state. The app uses the Europe/Copenhagen time zone.
+- The server enforces the rules for the app, the REST API and the Admin panel.
 - Live updates when other users change items.
 
 ## Stack
@@ -93,37 +93,26 @@ A session lasts 8 hours. After 5 failed logins, an account is locked for 10 minu
 
 ## How it works
 
-- **Permissions.** A contributor sees and changes only own items (creator or author). Only an editor can publish. Collection access gives the row scope, and a `beforeChange` hook checks values, so the rules also hold for the REST API. See [ADR 0003](docs/adr/0003-permissions-server-side.md).
+- **Permissions.** A contributor sees and changes only own items (creator or author). Only an editor can publish. Collection access gives the row scope. A `beforeChange` hook checks the values. Thus the rules also apply to the REST API. See [ADR 0003](docs/adr/0003-permissions-server-side.md).
 - **Login.** A Server Action logs in with Payload and sets the `payload-token` cookie. The app and the Admin panel share the session. Logout ends the session on the server. See [ADR 0011](docs/adr/0011-auth-and-session.md).
 - **Dashboard.** The URL holds the view, the filters and the list state (`?view=list`, `?type=article`, `?author=<id>`, `?archived=1`, `?status=draft`, `?sort=title&dir=desc`, `?item=12`, `?item=new`), so you can share a filtered view. The server loads the items as the logged-in user, builds the board and sorts the list. On small screens the list is the only view. The counts and the cards use the same deadline rule.
-- **Item view.** The item opens in a dialog over the dashboard, with its id in the URL. Server Actions save the item as the logged-in user; the same server rules apply. See [ADR 0004](docs/adr/0004-item-dialog-in-url.md).
+- **Item view.** The item opens in a dialog over the dashboard, with its id in the URL. Server Actions save the item as the logged-in user. The same server rules apply. See [ADR 0004](docs/adr/0004-item-dialog-in-url.md).
 - **Live updates.** Every 5 seconds, when the window gets focus and when the tab becomes visible, the dashboard asks the server for a small version of the items that the user can read. When the version changes, the page loads the new data. The check pauses while the tab is hidden, during unsaved edits or an open confirm, during a drag and while a move is pending. See [ADR 0008](docs/adr/0008-live-updates-polling.md).
 - **Publishing.** In the item dialog, select the Published step. The button changes to "Publish" and pulses. While you drag a card over Published, the column shows the same pulse. See [ADR 0009](docs/adr/0009-publish-pulse-magic-ui.md).
 - **Archive.** Archive replaces delete. An archived item keeps its status, is read-only and is hidden unless "Show archived" is on.
-- **Deadlines.** Plain dates, one state function, one formatter. See [ADR 0007](docs/adr/0007-deadlines-plain-dates.md).
+- **Deadlines.** A deadline is a plain date. One function gives the deadline state, and one function formats the date. See [ADR 0007](docs/adr/0007-deadlines-plain-dates.md).
 
 The full rules are in [docs/spec.md](docs/spec.md). The design rules are in [docs/design-system.md](docs/design-system.md). All decisions are in [docs/adr](docs/adr/).
 
-## Screens
-
-Screenshots of the app with the demo data:
-
-| | |
-|---|---|
-| ![Login](docs/screenshots/login.png) | ![List view](docs/screenshots/list.png) |
-| ![Drag to publish](docs/screenshots/drag-to-publish.png) | ![Item dialog, armed to publish](docs/screenshots/item-publish.png) |
-| ![Contributor board](docs/screenshots/contributor.png) | ![List view on a phone](docs/screenshots/mobile-list.png) |
-
-
 ## Supply-chain safety
 
-A hijacked npm package is usually found and removed within a few days. So this repo waits before it uses a new release.
+The npm registry usually finds and removes a hijacked package in a few days. Thus this repo waits before it uses a new release.
 
 - **28-day rule.** pnpm installs only package versions that are 28 days old or older (`minimumReleaseAge` in `pnpm-workspace.yaml`). The rule applies on every machine, in CI and in the Docker build. The GitHub Actions follow the same rule.
-- **Exact versions.** The lockfile holds the exact versions. CI and Docker install with `--frozen-lockfile`. Payload and Next.js have exact pins in `package.json`. The GitHub Actions are pinned to a commit SHA.
+- **Exact versions.** The lockfile holds the exact versions. CI and Docker install with `--frozen-lockfile`. Payload and Next.js have exact pins in `package.json`. Each GitHub Action has a pin to a commit SHA.
 - **Install scripts.** Only the packages in `onlyBuiltDependencies` can run install scripts.
-- **Audit.** `pnpm check` runs `pnpm audit` and fails on moderate or higher advisories. Fixes for sub-dependencies are in `overrides`. Unused optional packages are not installed.
-- **Few dependencies.** Unused starter parts are removed. The shadcn CLI is not a runtime dependency (`shadcn eject`).
+- **Audit.** `pnpm check` runs `pnpm audit` and fails on moderate or higher advisories. The fixes for sub-dependencies are in `overrides`. pnpm does not install unused optional packages.
+- **Few dependencies.** The repo has no unused starter parts. The shadcn CLI is not a runtime dependency (`shadcn eject`).
 
 Exceptions:
 
@@ -144,7 +133,7 @@ TODO: on these dates, upgrade the package and remove its entries from `ignoreGhs
 - "Own item" means the user created it or is an author.
 - Archive is a flag, not a status. Any item can be archived.
 - Contributors can move items between Idea, Draft and Review in any order. Only editors publish or unpublish.
-- No success toasts and no undo. The card moving is the feedback. To undo a move, drag it back.
+- No success toasts and no undo. The moved card is the feedback. To undo a move, drag it back.
 - Concurrent edits: the last save wins.
 - Mobile: list view only. The board is for desktop.
 - SQLite keeps the setup simple. Production would use Postgres.
@@ -155,6 +144,8 @@ TODO: on these dates, upgrade the package and remove its entries from `ignoreGhs
 - Optimistic locking for concurrent edits.
 - Realtime push (Server-Sent Events) instead of polling.
 - A mobile layout for the board.
+- Dark mode, for journalists who work late to meet a deadline. All colours are tokens (`@theme` in `globals.css`). Thus dark mode needs a second set of token values and a switch, but no component changes.
+- Notifications when the status of an item changes (for example in Slack). A Payload `afterChange` hook on `content-items` adds a job to the Payload jobs queue. Thus a slow Slack API does not delay the save.
 - Deployment.
 - End-to-end tests (Playwright).
 - A CI check that the migrations match the collections.

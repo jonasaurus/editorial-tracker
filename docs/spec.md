@@ -169,7 +169,8 @@ Pattern: the state, then the next step.
 - Optimistic locking for concurrent edits.
 - Realtime push (SSE or Postgres LISTEN/NOTIFY) instead of polling.
 - A mobile layout for the board.
-- Notifications.
+- Notifications when the status of an item changes (for example in Slack).
+- Dark mode.
 
 ## 9. Open points
 
