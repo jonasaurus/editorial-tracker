@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import { ContentItems } from './collections/ContentItems'
 import { Users } from './collections/Users'
 import { migrations } from './migrations'
+import { seed } from './seed/seed'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -30,4 +31,8 @@ export default buildConfig({
     prodMigrations: migrations,
   }),
   plugins: [],
+  // ROLE-4: seed the demo data on the first start, when the database has no users.
+  onInit: async (payload) => {
+    if (process.env.SEED_ON_START !== 'false') await seed(payload)
+  },
 })

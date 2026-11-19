@@ -36,6 +36,8 @@ docker compose up --build
 
 Open http://localhost:3000. The Admin panel is at http://localhost:3000/admin (editors only).
 
+Payload starts on the first request. Then it seeds the demo data when the database has no users.
+
 The database is in the Docker volume `data`. To start again with an empty database, run `docker compose down -v`.
 
 ### With Node
@@ -47,21 +49,24 @@ nvm use                 # or another tool that reads .nvmrc
 corepack enable
 pnpm install
 cp .env.example .env    # then set PAYLOAD_SECRET
-pnpm dev                # TODO: seeds the database on first start
+pnpm dev                # start the app
 ```
+
+On the first start, the app seeds the demo data when the database has no users.
 
 | Variable | Use |
 |---|---|
 | `DATABASE_URL` | The SQLite file. Default: `file:./editorial-tracker.db`. |
 | `PAYLOAD_SECRET` | The secret for auth tokens. Make one with `openssl rand -hex 32`. |
+| `SEED_ON_START` | `false` turns off the seed on first start. Default: on. |
 
 ### Demo users
 
 | Name | Role | Email | Password |
 |---|---|---|---|
-| Mette Holm | Editor | TODO | TODO |
-| Sara Nielsen | Contributor | TODO | TODO |
-| Jonas Berg | Contributor | TODO | TODO |
+| Mads Berg | Editor | mads@example.com | `demo-password` |
+| Mette Holm | Contributor | mette@example.com | `demo-password` |
+| Sara Nielsen | Contributor | sara@example.com | `demo-password` |
 
 The login screen lists these users in development.
 
@@ -79,7 +84,7 @@ The login screen lists these users in development.
 | `pnpm audit` | Check the dependencies for known advisories (moderate and higher) |
 | `pnpm generate:types` | Generate `src/payload-types.ts` after a change to a collection |
 | `pnpm payload migrate:create <name>` | Create a database migration after a change to a collection |
-| `pnpm seed` | Reset and seed the database (TODO) |
+| `pnpm seed` | Delete all users and items, then seed the demo data (development only) |
 
 ## How it works
 
