@@ -30,6 +30,12 @@ Token names follow shadcn/ui.
 | `--color-subtle` | `#E9E7E1` | Quiet fill: locked step, banner, author chip |
 | `--color-accent` | = `--color-muted` | shadcn hover and focus fill (menu items, ghost buttons, calendar days). Not the brand accent |
 | `--color-accent-foreground` | = `--color-foreground` | Text on the hover and focus fill |
+| `--color-card-foreground`, `--color-popover-foreground` | = `--color-foreground` | Text on card and popover |
+| `--color-secondary` | `#E4E1DB` | shadcn secondary fill |
+| `--color-secondary-foreground` | `#242424` | Text on the secondary fill |
+| `--container-dialog`, `--container-dialog-sm` | 680px, 520px | Dialog widths (§11) |
+| `--radius` | 0 | Square corners (§2) |
+| `--animate-publish-pulse` | 1.5s, ease-out, infinite | The publish pulse (§4) |
 
 The status colours and the red come from the brand orange in OKLCH: the hue is rotated, lightness and chroma stay close.
 
@@ -128,6 +134,12 @@ The line above the title. The separators (" · ", " → ") are not strong.
 - **Lock + tooltip** (a restriction on one control).
 - **Toast** (errors only, Sonner): ink background, 3px red left rule, `CircleAlert` icon, title + text.
 - **Field error**: red border + red message under the field.
+- **Texts**:
+  - Field errors: "Enter a title.", "Choose a status.", "Choose a type.", "Use a real date.", "Choose valid authors.".
+  - Toast titles: "Item not saved" (save), "Item not changed" (archive, unarchive), "Item not moved" (drag). Text: the server's rule message, "The change is not valid.", "The server did not respond. Try again." or, for a move, ERR-2.
+  - Stale item: "You cannot change this item now. Close it and open it again." (dialog), "This item changed on the server." (move).
+  - Lost access: "You no longer have access to this item." (ERR-3).
+  - Confirms: "Discard your changes?" / "Your changes to this item are not saved." / "Discard changes". "Archive this item?" / "It becomes read-only and hidden unless “Show archived” is on." (+ " Your unsaved changes are discarded.") / "Archive". "Unarchive this item?" / "You can edit it again." / "Unarchive".
 - **Empty state**: dashed `--color-input` border, title (14px semibold) + next step (12px muted). Optional action button. In the list view, the box is outside the table, full width under the header line.
 
 ## 8. Words
@@ -166,7 +178,7 @@ Used: `Columns4` (Board), `List`, `Plus`, `ChevronDown`, `User`, `ArrowUpRight`,
 | Type field | `Select` |
 | Login fields | `Input` + `Label` |
 | Authors | Chips + `DropdownMenu` with checkbox items (a checkable list, no search field). The menu stays open after each change. It opens under the whole field (left edges aligned). The check is on the left |
-| Deadline | Date picker (`Popover` + `Calendar`) |
+| Deadline | Date picker (`Popover` + `Calendar`). Weeks start on Monday. "Remove deadline" in the popover |
 | List view | `Table` (plain, server-sorted); the status tabs are a `<nav>` of links |
 | Toast | `Sonner` |
 | Tooltip | `Tooltip` |

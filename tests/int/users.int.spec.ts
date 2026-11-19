@@ -44,13 +44,13 @@ describe.each(transports)('Users ($name)', (t) => {
     })
   })
 
-  it('rejects a read of users without a login', async () => {
+  it('ROLE-5 rejects a read of users without a login', async () => {
     const result = await t.find(null, 'users')
 
     expect(result.status).toBe(403)
   })
 
-  it('lets a logged-in contributor read all users', async () => {
+  it('ROLE-5 lets a logged-in contributor read all users', async () => {
     const result = await t.find(contributor, 'users', {
       email: { like: `${t.name}-` },
     })
@@ -90,7 +90,7 @@ describe.each(transports)('Users ($name)', (t) => {
     expect(result.doc?.role).toBe('editor')
   })
 
-  it('ROLE-2 forbids a contributor to create a user', async () => {
+  it('ROLE-6 forbids a contributor to create a user', async () => {
     const result = await t.create(contributor, 'users', {
       name: 'Created by contributor',
       email: `${t.name}-created@example.com`,
@@ -101,7 +101,7 @@ describe.each(transports)('Users ($name)', (t) => {
     expect(result.status).toBe(403)
   })
 
-  it('forbids a contributor to change another user', async () => {
+  it('ROLE-6 forbids a contributor to change another user', async () => {
     const result = await t.update(contributor, 'users', otherContributor.user.id, {
       name: 'Changed',
     })
@@ -109,7 +109,7 @@ describe.each(transports)('Users ($name)', (t) => {
     expect(result.status).toBe(403)
   })
 
-  it('lets a contributor change their own name', async () => {
+  it('ROLE-6 lets a contributor change their own name', async () => {
     const self = await freshContributor()
 
     const result = await t.update(self, 'users', self.user.id, { name: 'Changed name' })
@@ -118,19 +118,19 @@ describe.each(transports)('Users ($name)', (t) => {
     expect(result.doc?.name).toBe('Changed name')
   })
 
-  it('forbids a contributor to delete a user', async () => {
+  it('ROLE-6 forbids a contributor to delete a user', async () => {
     const result = await t.delete(contributor, 'users', otherContributor.user.id)
 
     expect(result.status).toBe(403)
   })
 
-  it('forbids a contributor to unlock a user', async () => {
+  it('ROLE-6 forbids a contributor to unlock a user', async () => {
     const result = await t.unlock(contributor, otherContributor.user.email)
 
     expect(result.status).toBe(403)
   })
 
-  it('lets an editor unlock a user', async () => {
+  it('ROLE-6 lets an editor unlock a user', async () => {
     const result = await t.unlock(editor, otherContributor.user.email)
 
     expect(result.status).toBe(200)

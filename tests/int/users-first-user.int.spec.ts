@@ -26,7 +26,7 @@ beforeAll(async () => {
 })
 
 describe('Users: default role', () => {
-  it('gives the editor role to the first user and the contributor role to the next user', async () => {
+  it('ROLE-7 gives the editor role to the first user and the contributor role to the next user', async () => {
     const first = await createWithoutRole('first@example.com')
     const second = await createWithoutRole('second@example.com')
 

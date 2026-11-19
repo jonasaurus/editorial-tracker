@@ -19,6 +19,9 @@ A small newsroom plans its content in the Editorial Tracker. An item (an article
 - **ROLE-2** Only an editor can change the `role` field of a user.
 - **ROLE-3** Only an editor can open the Admin panel.
 - **ROLE-4** The app seeds 1 editor and 2 contributors with known passwords. The login screen lists them in development only ("Demo users · dev only").
+- **ROLE-5** Every logged-in user can read all users (for the author picker). Without a login, nobody can read users.
+- **ROLE-6** A user can change their own user (for example the name). Only an editor can create users, change other users, delete users or unlock a locked account.
+- **ROLE-7** The first user gets the role `editor`. Later users get `contributor` unless an editor sets the role.
 
 ## 3. Item model
 
@@ -54,7 +57,7 @@ A small newsroom plans its content in the Editorial Tracker. An item (an article
 ### Authors
 
 - **AUTH-1** A new item starts with the current user in `authors`.
-- **AUTH-2** A contributor can add or remove other authors on own items, but cannot remove themselves. The server rejects such an update. In the UI, the contributor's own row is checked and disabled.
+- **AUTH-2** A contributor can add or remove other authors on own items, but cannot remove themselves. The server rejects such an update. In the UI, the contributor's own row is checked and disabled, and the own chip reads "<name> (you)" with no remove button.
 - **AUTH-3** An editor can change `authors` freely.
 
 ## 5. Deadlines
@@ -94,12 +97,12 @@ The dashboard is the only page. One app bar holds: the mark, the user menu, the 
 
 - **BOARD-1** Four columns, one per status. Each column shows its count.
 - **BOARD-2** Cards in the Idea, Draft and Review columns are sorted by deadline, earliest first. Items with no deadline come last. Cards in the Published column are sorted by `publishedAt`, newest first. Items with no `publishedAt` come last. Archived cards come after the other cards, in the same order. Equal values: sort by title, then by id.
-- **BOARD-3** A card shows: type, deadline, title, authors and creator ("Sara Nielsen · created by Mette Holm"). A card in the Published column shows the published date ("Published 12 Nov" or "Published today") in place of the deadline. An archived card also shows an "Archived" label. All cards have the same height: a long title is cut after 2 lines with an ellipsis, and the item dialog shows the full title.
+- **BOARD-3** A card shows: type, deadline, title, authors and creator ("Sara Nielsen · created by Mette Holm"). A card in the Published column shows the published date ("Published 12 Nov" or "Published today") in place of the deadline. A card with no authors shows "Created by <name>". An archived card also shows an "Archived" label. All cards have the same height: a long title is cut after 2 lines with an ellipsis, and the item dialog shows the full title.
 - **BOARD-4** A click on a card opens the item dialog.
 
 ### 6.4 Drag and drop (board, desktop only)
 
-- **DND-1** Drag a card to another column to change its status. The same rules as the dialog apply, and the server checks them.
+- **DND-1** Drag a card to another column to change its status. The same rules as the dialog apply, and the server checks them. Archived items and a contributor's published items cannot be dragged. A window resize during a keyboard drag cancels the drag.
 - **DND-2** A column where the user cannot drop is marked as not allowed (for a contributor: Published). A drop there does nothing. A drop on the column of the item does nothing.
 - **DND-3** During a drag over Published, the column shows the publish pulse (the same animation as the armed Publish button).
 - **DND-4** If the server rejects the change, the card goes back to its old column, and an error toast shows.
@@ -112,7 +115,7 @@ The dashboard is the only page. One app bar holds: the mark, the user menu, the 
 - **LIST-2** Columns: Title, Type, Status, Authors, Created by, Deadline.
 - **LIST-3** Sort by a column header. The sort is in the URL (`?sort=title|type|status|authors|creator|deadline&dir=asc|desc`). The server sorts. Default: deadline ascending, no deadline last. A click on the sorted column changes the direction. A click on another column sorts it ascending. Empty values (no deadline, no authors, no creator) come last in both directions. Status sorts in the workflow order. Authors sort by the names in their stored order. Equal values: sort by deadline, then title.
 - **LIST-4** Archived rows (with "Show archived" on) are greyed, show an "Archived" label, and come after the other rows in the same order. There is no "Archived" tab.
-- **LIST-5** On small screens, the list view is the only view. There is no drag and drop on mobile. The Board/List switch is hidden, and `?view=board` shows the list.
+- **LIST-5** On small screens (below 768px), the list view is the only view. There is no drag and drop on mobile. The Board/List switch is hidden, and `?view=board` shows the list.
 - **LIST-6** A click anywhere on a row opens the item dialog. The title is the only link, so each row is one tab stop.
 
 ### 6.6 Item dialog
@@ -121,11 +124,11 @@ The item dialog is the content view. It is a dialog over the dashboard, not a se
 
 - **ITEM-1** The open item is in the URL (`?item=<id>`; a new item: `?item=new`). A cold load of that URL renders the dialog on the server. The other dashboard links on the page do not include `item`.
 - **ITEM-2** Open with a history `push`. Close with `replace` to the dashboard URL, and keep the filters.
-- **ITEM-3** Fields: title, status (stepper), type, deadline, authors. A metadata line shows creator and dates.
+- **ITEM-3** Fields: title, status (stepper), type, deadline, authors. A metadata line shows creator and dates. The title is one paragraph: Enter saves, line breaks become spaces, and the save removes spaces at the start and end.
 - **ITEM-4** Status stepper: the user selects a step. Steps the user cannot select are locked, with a lock icon and a tooltip (for a contributor: "Only editors can publish items").
-- **ITEM-5** Publish is "armed": when an editor selects the Published step, the footer button changes from "Save changes" to "Publish", with the publish pulse. There is no separate Publish button.
+- **ITEM-5** Publish is "armed": when an editor selects the Published step, the footer button changes from "Save changes" to "Publish", with the publish pulse. There is no separate Publish button. Publish is armed only for a saved item: on a new item, the button stays "Create item", with no pulse.
 - **ITEM-6** Publish is one atomic update. If validation fails, the status does not change.
-- **ITEM-7** The dialog closes after a successful save or publish. The card moves to its new column. No success toast.
+- **ITEM-7** The dialog closes after a successful save or publish. The card moves to its new column. No success toast. "Save changes" with no edits closes the dialog and sends no request.
 - **ITEM-8** Archived item: a banner at the top ("This item is archived. It is read-only and hidden unless “Show archived” is on. Unarchive to edit it again."), all fields read-only, and one button: "Unarchive". After a successful unarchive the dialog stays open and the fields can be edited. If the user cannot unarchive the item (a contributor and a published item, PERM-5), the banner text is "This item is archived. Only editors can unarchive a published item." and the button is "Close".
 - **ITEM-13** A contributor who opens an own published item (not archived) sees it read-only (PERM-2): a banner "This item is published. Only editors can change it.", all fields read-only, and one button: "Close".
 - **ITEM-9** Archive and Unarchive ask for confirmation. If the form has unsaved edits, the edits are discarded. After a successful archive the dialog closes.
@@ -156,7 +159,7 @@ Pattern: the state, then the next step.
 
 ## 7. API
 
-- **API-1** The Payload REST API gives the routes: list, create, read, update (`PATCH /api/content-items/:id`, also for status), and the live-update version (`GET /api/content-items/version`, LIVE-1).
+- **API-1** The Payload REST API gives the routes: list, create, read, update (`PATCH /api/content-items/:id`, also for status), delete (editors only, PERM-7), and the live-update version (`GET /api/content-items/version`, LIVE-1).
 - **API-2** The same rules apply to REST, the Local API and the Admin panel. GraphQL is off. Collection access returns a `Where` query (row scope). Value rules (PERM-3, PERM-4, PERM-6, AUTH-2) are in a collection `beforeChange` hook that compares the new value with the old document and throws `APIError(…, 403)`.
 - **API-3** The row scope for "own item" is `createdBy equals <user>` OR `authors equals <user>`. On `authors` (many users), `equals` matches when one of the authors is the user. `in` and `contains` give the same result. Do not use `not_equals` or `not_in` on `authors`: they compare each author on its own, so an item with 2 authors also matches.
 
