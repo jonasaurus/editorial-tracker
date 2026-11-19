@@ -3,6 +3,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { ContentItems } from './collections/ContentItems'
 import { Users } from './collections/Users'
 import { migrations } from './migrations'
 
@@ -16,7 +17,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users],
+  collections: [Users, ContentItems],
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
