@@ -15,3 +15,4 @@ Short records of the main decisions. Format: Context, Decision, Consequences.
 | [0009](0009-publish-pulse-magic-ui.md) | One publish pulse from Magic UI |
 | [0010](0010-docker-and-migrations.md) | Docker for the production build, with database migrations |
 | [0011](0011-auth-and-session.md) | Login with a Server Action and Payload sessions; the proxy checks only the cookie |
+| [0012](0012-sqlite-transactions.md) | One database transaction per write, also on SQLite |

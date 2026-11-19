@@ -98,7 +98,7 @@ One state function and one formatter (spec DL-1 to DL-5).
 - Metadata lines in the dialog, in this order: Created → Published or Archived → Updated.
   - "Created by Sara Nielsen · 2 Nov"
   - "Published 12 Nov · updated 12 Nov 14:05"
-  - "Archived today 10:40"
+  - "Archived today 10:40" (the time of the last update: an archived item is read-only, and there is no `archivedAt`, MODEL-3)
 - Dates use the deadline formatter, plus a time for events.
 - A line starts with a capital letter. After "·", use lowercase.
 - Counts: "14 items · 2 overdue · 1 archived" (app bar), "3 · 1 archived" (column). "overdue" is always 600 and red.
@@ -142,7 +142,7 @@ Used: `Columns4` (Board), `List`, `Plus`, `ChevronDown`, `User`, `ArrowUpRight`,
 | User menu | `DropdownMenu` |
 | Type and Author filters | `Select` or `DropdownMenu`, `variant="ghost" size="sm"` |
 | Item dialog, Not found | `Dialog` (680px; 520px for messages) |
-| Authors | Combobox (`Popover` + `Command`), a checkable list, no search field |
+| Authors | Chips + `DropdownMenu` with checkbox items (a checkable list, no search field). The menu stays open after each change |
 | Deadline | Date picker (`Popover` + `Calendar`) |
 | List view | `Table` (plain, server-sorted); the status tabs are a `<nav>` of links |
 | Toast | `Sonner` |

@@ -118,18 +118,19 @@ The dashboard is the only page. One app bar holds: the mark, the user menu, the 
 
 The item dialog is the content view. It is a dialog over the dashboard, not a separate page.
 
-- **ITEM-1** The open item is in the URL (`?item=<id>`). A cold load of that URL renders the dialog on the server.
+- **ITEM-1** The open item is in the URL (`?item=<id>`; a new item: `?item=new`). A cold load of that URL renders the dialog on the server. The other dashboard links on the page do not include `item`.
 - **ITEM-2** Open with a history `push`. Close with `replace` to the dashboard URL, and keep the filters.
 - **ITEM-3** Fields: title, status (stepper), type, deadline, authors. A metadata line shows creator and dates.
 - **ITEM-4** Status stepper: the user selects a step. Steps the user cannot select are locked, with a lock icon and a tooltip (for a contributor: "Only editors can publish items").
 - **ITEM-5** Publish is "armed": when an editor selects the Published step, the footer button changes from "Save changes" to "Publish", with the publish pulse. There is no separate Publish button.
 - **ITEM-6** Publish is one atomic update. If validation fails, the status does not change.
 - **ITEM-7** The dialog closes after a successful save or publish. The card moves to its new column. No success toast.
-- **ITEM-8** Archived item: a banner at the top ("This item is archived. It is read-only and hidden unless “Show archived” is on. Unarchive to edit it again."), all fields read-only, and one button: "Unarchive".
-- **ITEM-9** Archive and Unarchive ask for confirmation. If the form has unsaved edits, the edits are discarded.
+- **ITEM-8** Archived item: a banner at the top ("This item is archived. It is read-only and hidden unless “Show archived” is on. Unarchive to edit it again."), all fields read-only, and one button: "Unarchive". After a successful unarchive the dialog stays open and the fields can be edited. If the user cannot unarchive the item (a contributor and a published item, PERM-5), the banner text is "This item is archived. Only editors can unarchive a published item." and the button is "Close".
+- **ITEM-13** A contributor who opens an own published item (not archived) sees it read-only (PERM-2): a banner "This item is published. Only editors can change it.", all fields read-only, and one button: "Close".
+- **ITEM-9** Archive and Unarchive ask for confirmation. If the form has unsaved edits, the edits are discarded. After a successful archive the dialog closes.
 - **ITEM-10** Close (Esc, ✕, Cancel, click outside) asks for confirmation when the form has unsaved edits. Browser Back discards edits.
-- **ITEM-11** New item: kicker "New item", status Idea, the current user in authors. Buttons: "Cancel" and "Create item".
-- **ITEM-12** Not found: the same small dialog for a missing id, a malformed id and an item without access. Text: "This item does not exist, or you do not have access to it." Button: "Close".
+- **ITEM-11** New item: kicker "New item", status Idea, type Article, the current user in authors. The current user cannot remove themselves here (the server adds the creator back, AUTH-1). Buttons: "Cancel" and "Create item".
+- **ITEM-12** Not found: the same small dialog for a missing id, a malformed id and an item without access. Text: "This item does not exist, or you do not have access to it." Next step: "Check the link, or ask an editor to add you as an author." Button: "Close".
 
 ### 6.7 Empty states
 
