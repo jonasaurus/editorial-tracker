@@ -46,8 +46,8 @@
   --color-subtle: #e9e7e1; /* locked step, banner, author chip */
 
   /* Type: Tailwind default scale; Geist via next/font */
-  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
 
   /* Layout */
   --container-dialog-sm: 520px;
