@@ -4,6 +4,7 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Users } from './collections/Users'
+import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -24,6 +25,8 @@ export default buildConfig({
     client: {
       url: process.env.DATABASE_URL || '',
     },
+    // Production (Docker) runs the migrations on connect. Dev and tests use `push`.
+    prodMigrations: migrations,
   }),
   plugins: [],
 })

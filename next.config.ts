@@ -7,6 +7,8 @@ const __filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(__filename)
 
 const nextConfig: NextConfig = {
+  // A self-contained server for the Docker image.
+  output: 'standalone',
   // Next.js writes a managed block into AGENTS.md when it sees a coding
   // agent. AGENTS.md is curated by hand, so this is off.
   agentRules: false,

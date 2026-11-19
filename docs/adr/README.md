@@ -13,3 +13,4 @@ Short records of the main decisions. Format: Context, Decision, Consequences.
 | [0007](0007-deadlines-plain-dates.md) | Deadlines as plain dates, one state function |
 | [0008](0008-live-updates-polling.md) | Live updates by polling a version |
 | [0009](0009-publish-pulse-magic-ui.md) | One publish pulse from Magic UI |
+| [0010](0010-docker-and-migrations.md) | Docker for the production build, with database migrations |

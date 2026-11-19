@@ -1,43 +1,14 @@
-version: '3'
-
+# Runs the production build. Set PAYLOAD_SECRET in .env first (see .env.example).
 services:
-  payload:
-    image: node:20-alpine
+  app:
+    build: .
     ports:
       - '3000:3000'
+    environment:
+      DATABASE_URL: file:/app/data/editorial-tracker.db
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?Set PAYLOAD_SECRET in .env (see .env.example)}
     volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
-    depends_on:
-      - mongo
-      # - postgres
-    env_file:
-      - .env
-
-  # Ensure your DATABASE_URL uses 'mongo' as the hostname ie. mongodb://mongo/my-db-name
-  mongo:
-    image: mongo:latest
-    ports:
-      - '27017:27017'
-    command:
-      - --storageEngine=wiredTiger
-    volumes:
-      - data:/data/db
-    logging:
-      driver: none
-
-  # Uncomment the following to use postgres
-  # postgres:
-  #   restart: always
-  #   image: postgres:latest
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
+      - data:/app/data
 
 volumes:
   data:
-  # pgdata:
-  node_modules:
