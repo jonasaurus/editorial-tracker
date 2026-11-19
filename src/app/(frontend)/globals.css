@@ -658,6 +658,9 @@
   --color-primary-foreground: #f9f9f3;
   --color-secondary: #e4e1db;
   --color-secondary-foreground: #242424;
+  /* shadcn hover and focus fill (menu items, ghost buttons). Not the brand accent: that is --color-publish. */
+  --color-accent: var(--color-muted);
+  --color-accent-foreground: var(--color-foreground);
 
   /* Brand accent: publish and emphasis only (see design-system.md) */
   --color-publish: #fc7230;

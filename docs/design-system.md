@@ -28,6 +28,8 @@ Token names follow shadcn/ui.
 | `--color-disabled-foreground` | `#9A948D` | Disabled and read-only text, placeholders |
 | `--color-disabled-border` | `#D0CDC6` | Disabled and read-only borders |
 | `--color-subtle` | `#E9E7E1` | Quiet fill: locked step, banner, author chip |
+| `--color-accent` | = `--color-muted` | shadcn hover and focus fill (menu items, ghost buttons, calendar days). Not the brand accent |
+| `--color-accent-foreground` | = `--color-foreground` | Text on the hover and focus fill |
 
 The status colours and the red come from the brand orange in OKLCH: the hue is rotated, lightness and chroma stay close.
 
