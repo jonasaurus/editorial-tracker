@@ -4,7 +4,9 @@
   "description": "Editorial Tracker: plan newsroom content from idea to published.",
   "type": "module",
   "scripts": {
+    "audit": "pnpm audit --audit-level moderate",
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm audit && pnpm test",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",
     "format": "prettier --write .",
@@ -13,6 +15,7 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "prepare": "simple-git-hooks",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "test": "cross-env NODE_OPTIONS=--no-deprecation vitest run",
     "typecheck": "tsc --noEmit"
@@ -45,6 +48,7 @@
     "eslint-config-next": "16.4.2",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "0.8.1",
+    "simple-git-hooks": "2.14.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.7.3",
     "vite": "7.3.7",
@@ -56,5 +60,8 @@
     "pnpm": ">=10.28.2"
   },
   "private": true,
-  "packageManager": "pnpm@10.28.2"
+  "packageManager": "pnpm@10.28.2",
+  "simple-git-hooks": {
+    "pre-commit": "pnpm check"
+  }
 }
