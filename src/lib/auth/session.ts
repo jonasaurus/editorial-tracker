@@ -12,8 +12,11 @@ import { loginPath } from './next-path'
  * `cache` runs it once per request.
  */
 export const getUser = cache(async () => {
+  // Read the headers first: this makes the page dynamic before Payload connects to the
+  // database. Otherwise `next build` prerenders the page and connects at build time.
+  const requestHeaders = await headers()
   const payload = await getPayload({ config })
-  const { user } = await payload.auth({ headers: await headers() })
+  const { user } = await payload.auth({ headers: requestHeaders })
   return user
 })
 
