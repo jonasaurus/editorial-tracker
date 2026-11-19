@@ -10,7 +10,10 @@ type Props = {
   listHref: string
 }
 
-/** The Board/List switch (DASH-1). A 2px orange rule marks the active view (design-system §4). */
+/**
+ * The Board/List switch (DASH-1). A 2px orange rule marks the active view (design-system §4).
+ * Hidden below `md`: there the list is the only view (LIST-5).
+ */
 export function ViewSwitch({ current, boardHref, listHref }: Props) {
   const links: { view: DashboardView; label: string; href: string; Icon: LucideIcon }[] = [
     { view: 'board', label: 'Board', href: boardHref, Icon: Columns4 },
@@ -18,7 +21,7 @@ export function ViewSwitch({ current, boardHref, listHref }: Props) {
   ]
 
   return (
-    <nav aria-label="View" className="flex items-center gap-1">
+    <nav aria-label="View" className="hidden items-center gap-1 md:flex">
       {links.map(({ view, label, href, Icon }) => {
         const active = view === current
         return (

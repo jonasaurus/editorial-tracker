@@ -4,12 +4,16 @@ import { getPayload } from 'payload'
 import { AppBar } from '@/components/dashboard/app-bar'
 import { Board, type BoardEmpty } from '@/components/dashboard/board'
 import type { FilterOption } from '@/components/dashboard/filter-menu'
+import { ListView } from '@/components/dashboard/list-view'
 import { toPathWithQuery } from '@/lib/auth/next-path'
 import { requireSession } from '@/lib/auth/session'
 import { buildBoard, formatCounts } from '@/lib/dashboard/board'
+import { buildList, getListEmpty } from '@/lib/dashboard/list'
 import {
   dashboardHref,
   hasFilters,
+  type ListSort,
+  nextSort,
   parseDashboardParams,
   type SearchParams,
 } from '@/lib/dashboard/params'
@@ -36,6 +40,8 @@ export default async function DashboardPage({ searchParams }: Props) {
   const today = todayInCopenhagen()
   const board = buildBoard(items, today)
   const href = (change: Parameters<typeof dashboardHref>[1]) => dashboardHref(params, change)
+  // LIST-3: a header link sets the sort after a click on that column.
+  const sortHref = (column: ListSort) => href(nextSort(params, column))
 
   const typeOptions: FilterOption[] = [
     { value: 'all', label: 'All', href: href({ type: null }) },
@@ -50,15 +56,36 @@ export default async function DashboardPage({ searchParams }: Props) {
     })),
   ]
 
+  // EMPTY-3: "Clear filters" keeps the view, the status tab and the sort.
+  const clearHref = href({ type: null, author: null, archived: false })
   const empty: BoardEmpty = !hasAnyItem
     ? { kind: 'no-items' }
     : hasFilters(params) && items.length === 0
-      ? {
-          kind: 'no-results',
-          total,
-          clearHref: href({ type: null, author: null, archived: false }),
-        }
+      ? { kind: 'no-results', total, clearHref }
       : { kind: 'none' }
+
+  const list = buildList(items, params)
+  const listView = (className?: string) => (
+    <ListView
+      className={className}
+      rows={list.rows}
+      today={today}
+      status={params.status}
+      sort={params.sort}
+      dir={params.dir}
+      tabs={list.tabs.map((tab) => ({ tab, href: href({ status: tab.status }) }))}
+      sortHref={sortHref}
+      empty={getListEmpty({
+        hasAnyItem,
+        filtered: hasFilters(params),
+        itemCount: items.length,
+        rowCount: list.rows.length,
+        status: params.status,
+      })}
+      total={total}
+      clearHref={clearHref}
+    />
+  )
 
   return (
     <>
@@ -90,11 +117,13 @@ export default async function DashboardPage({ searchParams }: Props) {
       />
       <main>
         {params.view === 'board' ? (
-          <Board board={board} today={today} empty={empty} />
+          <>
+            {/* LIST-5: below `md` the list is the only view. */}
+            <Board className="hidden md:block" board={board} today={today} empty={empty} />
+            {listView('md:hidden')}
+          </>
         ) : (
-          <p className="px-4 pt-6 text-sm text-muted-foreground md:px-10">
-            The list view comes in a later session.
-          </p>
+          listView()
         )}
       </main>
     </>

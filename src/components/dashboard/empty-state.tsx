@@ -1,5 +1,7 @@
+import Link from 'next/link'
 import type { ReactNode } from 'react'
 
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -27,5 +29,42 @@ export function EmptyState({ title, text, action, className }: Props) {
       </div>
       {action}
     </div>
+  )
+}
+
+/** EMPTY-1: the user can read no items at all. The board and the list show it. */
+export function NoItemsState({ className }: { className?: string }) {
+  return (
+    <EmptyState
+      className={className}
+      title="No items yet"
+      text="Create the first item with “New item” at the top right."
+    />
+  )
+}
+
+type NoResultsProps = {
+  /** All active items, without the filters. */
+  total: number
+  /** The dashboard URL without Type, Author and Show archived. */
+  clearHref: string
+  className?: string
+}
+
+/** EMPTY-3: filters are set and hide all items. The board and the list show it. */
+export function NoResultsState({ total, clearHref, className }: NoResultsProps) {
+  return (
+    <EmptyState
+      className={className}
+      title="No items match these filters"
+      text={`Change the filters, or clear them to see all ${total} ${total === 1 ? 'item' : 'items'}.`}
+      action={
+        <Button asChild variant="outline" size="sm" className="border-input text-sm">
+          <Link href={clearHref} scroll={false}>
+            Clear filters
+          </Link>
+        </Button>
+      }
+    />
   )
 }
