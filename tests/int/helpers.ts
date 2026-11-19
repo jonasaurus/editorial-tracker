@@ -227,9 +227,10 @@ export async function rest(
   method: keyof typeof restHandlers,
   actor: Actor | null,
   path: string[],
-  options: { body?: unknown; query?: string } = {},
-): Promise<{ status: number; body: unknown }> {
-  const headers = new Headers()
+  // `headers` are sent as they are (for example a session cookie instead of the JWT header).
+  options: { body?: unknown; query?: string; headers?: HeadersInit } = {},
+): Promise<{ status: number; body: unknown; headers: Headers }> {
+  const headers = new Headers(options.headers)
   if (actor) headers.set('Authorization', `JWT ${actor.token}`)
   if (options.body !== undefined) headers.set('Content-Type', 'application/json')
   const query = options.query ? `?${options.query}` : ''
@@ -241,7 +242,7 @@ export async function rest(
   const response = await restHandlers[method](config)(request, {
     params: Promise.resolve({ slug: path }),
   })
-  return { status: response.status, body: await response.json() }
+  return { status: response.status, body: await response.json(), headers: response.headers }
 }
 
 /** Reads `{ errors: [{ message }] }` from a REST error body. */

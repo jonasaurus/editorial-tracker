@@ -9,6 +9,7 @@ import {
 import type { ContentItem } from '@/payload-types'
 
 import { isEditor, isEditorUser, isLoggedIn } from '../../access'
+import { versionEndpoint } from '../../lib/dashboard/version'
 import { isPlainDate } from '../../lib/deadline'
 import { checkItemChange, type RuleId } from './rules'
 
@@ -95,6 +96,8 @@ export const ContentItems: CollectionConfig = {
     // PERM-7: no delete in the app. Editors can delete in the Admin panel.
     delete: isEditor,
   },
+  // LIVE-1: `GET /api/content-items/version`. Custom endpoints match before `/:id`.
+  endpoints: [versionEndpoint],
   fields: [
     {
       name: 'title',
