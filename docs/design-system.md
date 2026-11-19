@@ -40,6 +40,7 @@ The status colours and the red come from the brand orange in OKLCH: the hue is r
 - Spacing: the Tailwind default scale (4px base).
 - Corners: square (radius 0). The only pill is the "Archived" label (outline).
 - Shadows: only on the dialog, popovers, the dragged card and the toast.
+- Board cards: one height, 112px. The title shows 2 lines or fewer; a longer title ends with an ellipsis (…). The type, deadline and people lines are one line each, cut with an ellipsis. The drop slot (§4) has the same height.
 - Control height: 40px in dialogs and on the login screen; 32px (`size="sm"`) in the app bar and on the board.
 
 ## 3. Status

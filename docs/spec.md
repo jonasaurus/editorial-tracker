@@ -94,7 +94,7 @@ The dashboard is the only page. One app bar holds: the mark, the user menu, the 
 
 - **BOARD-1** Four columns, one per status. Each column shows its count.
 - **BOARD-2** Cards in the Idea, Draft and Review columns are sorted by deadline, earliest first. Items with no deadline come last. Cards in the Published column are sorted by `publishedAt`, newest first. Items with no `publishedAt` come last. Archived cards come after the other cards, in the same order. Equal values: sort by title, then by id.
-- **BOARD-3** A card shows: type, deadline, title, authors and creator ("Sara Nielsen · created by Mette Holm"). A card in the Published column shows the published date ("Published 12 Nov" or "Published today") in place of the deadline. An archived card also shows an "Archived" label.
+- **BOARD-3** A card shows: type, deadline, title, authors and creator ("Sara Nielsen · created by Mette Holm"). A card in the Published column shows the published date ("Published 12 Nov" or "Published today") in place of the deadline. An archived card also shows an "Archived" label. All cards have the same height: a long title is cut after 2 lines with an ellipsis, and the item dialog shows the full title.
 - **BOARD-4** A click on a card opens the item dialog.
 
 ### 6.4 Drag and drop (board, desktop only)
