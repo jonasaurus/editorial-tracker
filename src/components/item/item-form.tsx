@@ -141,7 +141,7 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
     run(
       () => (item ? updateItem(item.id, input) : createItem(input)),
       'Item not saved',
-      // ITEM-7: the page renders fresh after the replace. The client router keeps no dynamic data.
+      // ITEM-7: the action refreshes the page data, then the dialog closes.
       onClose,
     )
   }
@@ -151,9 +151,9 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
     run(
       () => setArchived(item.id, archived),
       'Item not changed',
-      // ITEM-9: archive closes. Unarchive keeps the dialog open: the new `updatedAt` re-keys
-      // the form, so the fields can be edited.
-      archived ? onClose : () => router.refresh(),
+      // ITEM-9: archive closes. Unarchive keeps the dialog open: the action refreshes the page,
+      // and the new `updatedAt` re-keys the form, so the fields can be edited.
+      archived ? onClose : () => {},
     )
   }
 
@@ -245,7 +245,9 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
               id={ids.deadline}
               value={values.deadline}
               onChange={(deadline) => set('deadline', deadline)}
-              status={values.status}
+              // The deadline state follows the saved status: an armed Publish still shows the
+              // overdue text (design 03a).
+              status={item?.status ?? values.status}
               archived={item?.archived ?? false}
               today={today}
               disabled={readOnly}
