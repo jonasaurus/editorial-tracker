@@ -12,7 +12,7 @@ import {
   type Where,
 } from 'payload'
 
-import type { User } from '@/payload-types'
+import type { ContentItem, User } from '@/payload-types'
 
 /** The password of every test user. */
 export const TEST_PASSWORD = 'test-password'
@@ -69,6 +69,35 @@ export async function createUser(payload: Payload, input: UserInput): Promise<Us
     collection: 'users',
     data: { ...input, password: TEST_PASSWORD },
   })
+}
+
+type SeedItemInput = Partial<Omit<ContentItem, 'authors' | 'createdBy'>> & {
+  createdBy: User
+  authors: User[]
+}
+
+/**
+ * Creates an item for test setup: an article in Idea, unless `data` sets other values.
+ * Access control is off, and no user means no value rules.
+ */
+export function seedItem(payload: Payload, data: SeedItemInput): Promise<ContentItem> {
+  const { createdBy, authors, ...rest } = data
+  return payload.create({
+    collection: 'content-items',
+    data: {
+      title: 'Seeded',
+      type: 'article',
+      status: 'idea',
+      ...rest,
+      createdBy: createdBy.id,
+      authors: authors.map((author) => author.id),
+    },
+  })
+}
+
+/** Reads an item for a check. Access control is off. */
+export function readItem(payload: Payload, id: number): Promise<ContentItem> {
+  return payload.findByID({ collection: 'content-items', id, depth: 0 })
 }
 
 /** Logs in a user and returns the JWT. */

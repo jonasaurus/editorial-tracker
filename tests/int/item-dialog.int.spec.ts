@@ -2,12 +2,13 @@ import config from '@payload-config'
 import { getPayload, type Payload } from 'payload'
 import { beforeAll, describe, expect, it } from 'vitest'
 
+import { authorIds } from '@/collections/ContentItems/rules'
 import { getItemDialogData } from '@/lib/item/detail'
 import { createItemAs, setArchivedAs, updateItemAs } from '@/lib/item/save'
 import type { ItemInput } from '@/lib/item/types'
 import type { ContentItem, User } from '@/payload-types'
 
-import { createUser } from './helpers'
+import { createUser, readItem, seedItem } from './helpers'
 
 let payload: Payload
 let editor: User
@@ -15,35 +16,6 @@ let contributor: User
 let other: User
 
 const STALE = 'You cannot change this item now. Close it and open it again.'
-
-/** Creates an item for test setup. Access control is off. */
-function seedItem(
-  data: Partial<Omit<ContentItem, 'authors' | 'createdBy'>> & {
-    createdBy: User
-    authors: User[]
-  },
-): Promise<ContentItem> {
-  const { createdBy, authors, ...rest } = data
-  return payload.create({
-    collection: 'content-items',
-    data: {
-      title: 'Seeded',
-      type: 'article',
-      status: 'idea',
-      ...rest,
-      createdBy: createdBy.id,
-      authors: authors.map((author) => author.id),
-    },
-  })
-}
-
-/** Reads an item for a check. Access control is off. */
-function readItem(id: number): Promise<ContentItem> {
-  return payload.findByID({ collection: 'content-items', id, depth: 0 })
-}
-
-const ids = (authors: ContentItem['authors']): number[] =>
-  (authors ?? []).map((author) => (typeof author === 'number' ? author : author.id))
 
 const input = (values: Partial<ItemInput> = {}): ItemInput => ({
   title: 'An item',
@@ -60,7 +32,7 @@ const inputFrom = (item: ContentItem, values: Partial<ItemInput> = {}): ItemInpu
   status: item.status,
   type: item.type,
   deadline: item.deadline ?? null,
-  authors: ids(item.authors),
+  authors: authorIds(item.authors),
   ...values,
 })
 
@@ -92,9 +64,9 @@ describe('createItemAs', () => {
     )
     expect(result).toMatchObject({ ok: true })
     if (!result.ok) return
-    const item = await readItem(result.id)
+    const item = await readItem(payload, result.id)
     expect(item).toMatchObject({ title: 'New idea', status: 'idea', archived: false })
-    expect(ids(item.authors)).toEqual([other.id, contributor.id])
+    expect(authorIds(item.authors)).toEqual([other.id, contributor.id])
     expect(item.createdBy).toBe(contributor.id)
   })
 
@@ -143,7 +115,7 @@ describe('createItemAs', () => {
 
 describe('updateItemAs', () => {
   it('an editor changes all fields in one update', async () => {
-    const item = await seedItem({ createdBy: contributor, authors: [contributor] })
+    const item = await seedItem(payload, { createdBy: contributor, authors: [contributor] })
     const values = input({
       title: 'Changed',
       status: 'review',
@@ -152,29 +124,29 @@ describe('updateItemAs', () => {
       authors: [other.id, contributor.id],
     })
     expect(await updateItemAs(payload, editor, item.id, values)).toEqual({ ok: true, id: item.id })
-    const saved = await readItem(item.id)
+    const saved = await readItem(payload, item.id)
     expect(saved).toMatchObject({
       title: 'Changed',
       status: 'review',
       type: 'podcast',
       deadline: '2026-12-24',
     })
-    expect(ids(saved.authors)).toEqual([other.id, contributor.id])
+    expect(authorIds(saved.authors)).toEqual([other.id, contributor.id])
   })
 
   it('an editor removes the deadline', async () => {
-    const item = await seedItem({
+    const item = await seedItem(payload, {
       createdBy: editor,
       authors: [editor],
       deadline: '2026-12-01',
     })
     const result = await updateItemAs(payload, editor, item.id, inputFrom(item, { deadline: null }))
     expect(result).toEqual({ ok: true, id: item.id })
-    expect((await readItem(item.id)).deadline ?? null).toBeNull()
+    expect((await readItem(payload, item.id)).deadline ?? null).toBeNull()
   })
 
   it('ITEM-6: an editor publishes with an empty title; the status does not change', async () => {
-    const item = await seedItem({ createdBy: editor, authors: [editor], status: 'review' })
+    const item = await seedItem(payload, { createdBy: editor, authors: [editor], status: 'review' })
     const result = await updateItemAs(
       payload,
       editor,
@@ -182,11 +154,11 @@ describe('updateItemAs', () => {
       inputFrom(item, { title: '', status: 'published' }),
     )
     expect(result).toEqual({ ok: false, reason: 'invalid', errors: { title: 'Enter a title.' } })
-    expect(await readItem(item.id)).toMatchObject({ status: 'review', publishedAt: null })
+    expect(await readItem(payload, item.id)).toMatchObject({ status: 'review', publishedAt: null })
   })
 
   it('ITEM-6, MODEL-2: an editor publishes; publishedAt is set', async () => {
-    const item = await seedItem({ createdBy: editor, authors: [editor], status: 'review' })
+    const item = await seedItem(payload, { createdBy: editor, authors: [editor], status: 'review' })
     const result = await updateItemAs(
       payload,
       editor,
@@ -194,13 +166,13 @@ describe('updateItemAs', () => {
       inputFrom(item, { status: 'published' }),
     )
     expect(result).toEqual({ ok: true, id: item.id })
-    const saved = await readItem(item.id)
+    const saved = await readItem(payload, item.id)
     expect(saved.status).toBe('published')
     expect(saved.publishedAt).toEqual(expect.any(String))
   })
 
   it('PERM-3: a contributor cannot publish; the status does not change', async () => {
-    const item = await seedItem({
+    const item = await seedItem(payload, {
       createdBy: contributor,
       authors: [contributor],
       status: 'review',
@@ -216,11 +188,11 @@ describe('updateItemAs', () => {
       reason: 'rejected',
       message: 'Only editors can publish items.',
     })
-    expect((await readItem(item.id)).status).toBe('review')
+    expect((await readItem(payload, item.id)).status).toBe('review')
   })
 
   it('AUTH-2: a contributor cannot remove themselves from the authors', async () => {
-    const item = await seedItem({ createdBy: contributor, authors: [contributor, other] })
+    const item = await seedItem(payload, { createdBy: contributor, authors: [contributor, other] })
     const result = await updateItemAs(
       payload,
       contributor,
@@ -232,11 +204,14 @@ describe('updateItemAs', () => {
       reason: 'rejected',
       message: 'You cannot remove yourself from the authors. Ask an editor to do it.',
     })
-    expect(ids((await readItem(item.id)).authors)).toEqual([contributor.id, other.id])
+    expect(authorIds((await readItem(payload, item.id)).authors)).toEqual([
+      contributor.id,
+      other.id,
+    ])
   })
 
   it('ADR 0012: an unknown author id gives a field error and saves nothing', async () => {
-    const item = await seedItem({ createdBy: editor, authors: [editor] })
+    const item = await seedItem(payload, { createdBy: editor, authors: [editor] })
     const result = await updateItemAs(
       payload,
       editor,
@@ -248,13 +223,13 @@ describe('updateItemAs', () => {
       reason: 'invalid',
       errors: { authors: 'Choose valid authors.' },
     })
-    const saved = await readItem(item.id)
+    const saved = await readItem(payload, item.id)
     expect(saved.title).toBe('Seeded')
-    expect(ids(saved.authors)).toEqual([editor.id])
+    expect(authorIds(saved.authors)).toEqual([editor.id])
   })
 
   it('PERM-6: an archived item cannot be changed', async () => {
-    const item = await seedItem({ createdBy: editor, authors: [editor], archived: true })
+    const item = await seedItem(payload, { createdBy: editor, authors: [editor], archived: true })
     const result = await updateItemAs(
       payload,
       editor,
@@ -266,11 +241,11 @@ describe('updateItemAs', () => {
       reason: 'rejected',
       message: 'This item is archived. Unarchive it before you change it.',
     })
-    expect((await readItem(item.id)).title).toBe('Seeded')
+    expect((await readItem(payload, item.id)).title).toBe('Seeded')
   })
 
   it('ERR-3: a contributor who is no longer an author gets no-access', async () => {
-    const item = await seedItem({ createdBy: other, authors: [other, contributor] })
+    const item = await seedItem(payload, { createdBy: other, authors: [other, contributor] })
     const removed = await updateItemAs(
       payload,
       editor,
@@ -285,11 +260,11 @@ describe('updateItemAs', () => {
       inputFrom(item, { title: 'Too late' }),
     )
     expect(result).toEqual({ ok: false, reason: 'no-access' })
-    expect((await readItem(item.id)).title).toBe('Seeded')
+    expect((await readItem(payload, item.id)).title).toBe('Seeded')
   })
 
   it('PERM-2: a contributor saves after an editor published the item; the change is rejected', async () => {
-    const item = await seedItem({ createdBy: contributor, authors: [contributor] })
+    const item = await seedItem(payload, { createdBy: contributor, authors: [contributor] })
     await updateItemAs(payload, editor, item.id, inputFrom(item, { status: 'published' }))
     const result = await updateItemAs(
       payload,
@@ -298,7 +273,7 @@ describe('updateItemAs', () => {
       inputFrom(item, { title: 'Too late' }),
     )
     expect(result).toEqual({ ok: false, reason: 'rejected', message: STALE })
-    expect(await readItem(item.id)).toMatchObject({ title: 'Seeded', status: 'published' })
+    expect(await readItem(payload, item.id)).toMatchObject({ title: 'Seeded', status: 'published' })
   })
 
   it('ERR-3: an editor updates a missing item and gets no-access', async () => {
@@ -309,7 +284,7 @@ describe('updateItemAs', () => {
   })
 
   it("PERM-1: a contributor updates another user's item and gets no-access", async () => {
-    const item = await seedItem({ createdBy: other, authors: [other] })
+    const item = await seedItem(payload, { createdBy: other, authors: [other] })
     expect(await updateItemAs(payload, contributor, item.id, inputFrom(item))).toEqual({
       ok: false,
       reason: 'no-access',
@@ -331,7 +306,7 @@ describe('updateItemAs', () => {
   })
 
   it('an invalid input gives field errors', async () => {
-    const item = await seedItem({ createdBy: editor, authors: [editor] })
+    const item = await seedItem(payload, { createdBy: editor, authors: [editor] })
     const result = await updateItemAs(payload, editor, item.id, { ...input(), deadline: 'x' })
     expect(result).toEqual({
       ok: false,
@@ -343,15 +318,15 @@ describe('updateItemAs', () => {
 
 describe('setArchivedAs', () => {
   it('ITEM-8: an editor archives and unarchives an item', async () => {
-    const item = await seedItem({ createdBy: contributor, authors: [contributor] })
+    const item = await seedItem(payload, { createdBy: contributor, authors: [contributor] })
     expect(await setArchivedAs(payload, editor, item.id, true)).toEqual({ ok: true, id: item.id })
-    expect((await readItem(item.id)).archived).toBe(true)
+    expect((await readItem(payload, item.id)).archived).toBe(true)
     expect(await setArchivedAs(payload, editor, item.id, false)).toEqual({ ok: true, id: item.id })
-    expect((await readItem(item.id)).archived).toBe(false)
+    expect((await readItem(payload, item.id)).archived).toBe(false)
   })
 
   it('PERM-5: a contributor archives and unarchives an own item', async () => {
-    const item = await seedItem({ createdBy: contributor, authors: [contributor] })
+    const item = await seedItem(payload, { createdBy: contributor, authors: [contributor] })
     expect(await setArchivedAs(payload, contributor, item.id, true)).toEqual({
       ok: true,
       id: item.id,
@@ -360,11 +335,11 @@ describe('setArchivedAs', () => {
       ok: true,
       id: item.id,
     })
-    expect((await readItem(item.id)).archived).toBe(false)
+    expect((await readItem(payload, item.id)).archived).toBe(false)
   })
 
   it('PERM-2, PERM-5: a contributor cannot unarchive an own published item', async () => {
-    const item = await seedItem({
+    const item = await seedItem(payload, {
       createdBy: contributor,
       authors: [contributor],
       status: 'published',
@@ -375,17 +350,17 @@ describe('setArchivedAs', () => {
       reason: 'rejected',
       message: STALE,
     })
-    expect((await readItem(item.id)).archived).toBe(true)
+    expect((await readItem(payload, item.id)).archived).toBe(true)
   })
 
   it('a value that is not a boolean is rejected', async () => {
-    const item = await seedItem({ createdBy: editor, authors: [editor] })
+    const item = await seedItem(payload, { createdBy: editor, authors: [editor] })
     expect(await setArchivedAs(payload, editor, item.id, 'yes')).toEqual({
       ok: false,
       reason: 'rejected',
       message: 'The change is not valid.',
     })
-    expect((await readItem(item.id)).archived).toBe(false)
+    expect((await readItem(payload, item.id)).archived).toBe(false)
   })
 
   it('a malformed id gives no-access', async () => {
@@ -433,14 +408,14 @@ describe('getItemDialogData', () => {
   })
 
   it("ITEM-12, PERM-1: another contributor's item is not found", async () => {
-    const item = await seedItem({ createdBy: other, authors: [other] })
+    const item = await seedItem(payload, { createdBy: other, authors: [other] })
     expect(await getItemDialogData(payload, contributor, { kind: 'id', id: item.id })).toEqual({
       kind: 'not-found',
     })
   })
 
   it('ITEM-3: an own item gives the detail, with the authors in the stored order', async () => {
-    const item = await seedItem({
+    const item = await seedItem(payload, {
       createdBy: contributor,
       authors: [other, contributor],
       title: 'Detail',

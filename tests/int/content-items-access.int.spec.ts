@@ -2,30 +2,20 @@ import config from '@payload-config'
 import { getPayload, type Payload, type Where } from 'payload'
 import { beforeAll, describe, expect, it } from 'vitest'
 
-import type { ContentItem, User } from '@/payload-types'
+import type { ContentItem } from '@/payload-types'
 
-import { createActor, transports, type Actor } from './helpers'
+import { createActor, seedItem, transports, type Actor } from './helpers'
 
 let payload: Payload
 
-type ItemInput = Pick<ContentItem, 'title' | 'status'> & { createdBy: User; authors: User[] }
-
-/** Creates an item for test setup. Access control is off. */
-function createItem({ title, status, createdBy, authors }: ItemInput): Promise<ContentItem> {
-  return payload.create({
-    collection: 'content-items',
-    data: {
-      title,
-      status,
-      type: 'article',
-      createdBy: createdBy.id,
-      authors: authors.map((author) => author.id),
-    },
-  })
-}
-
 beforeAll(async () => {
   payload = await getPayload({ config })
+})
+
+describe('API-2 API surfaces', () => {
+  it('GraphQL is off: the rules have tests for REST and the Local API only', () => {
+    expect(payload.config.graphQL.disable).toBe(true)
+  })
 })
 
 describe('API-3 authors query operator', () => {
@@ -43,7 +33,7 @@ describe('API-3 authors query operator', () => {
       email: 'operator-second@example.com',
       role: 'contributor',
     })
-    item = await createItem({
+    item = await seedItem(payload, {
       title: 'Two authors',
       status: 'idea',
       createdBy: first.user,
@@ -90,25 +80,25 @@ describe.each(transports)('Content items: row scope ($name)', (t) => {
       email: `${t.name}-items-other@example.com`,
       role: 'contributor',
     })
-    created = await createItem({
+    created = await seedItem(payload, {
       title: `${t.name} created`,
       status: 'idea',
       createdBy: contributor.user,
       authors: [other.user],
     })
-    authored = await createItem({
+    authored = await seedItem(payload, {
       title: `${t.name} authored`,
       status: 'draft',
       createdBy: other.user,
       authors: [other.user, contributor.user],
     })
-    othersItem = await createItem({
+    othersItem = await seedItem(payload, {
       title: `${t.name} others`,
       status: 'review',
       createdBy: other.user,
       authors: [other.user],
     })
-    ownPublished = await createItem({
+    ownPublished = await seedItem(payload, {
       title: `${t.name} own published`,
       status: 'published',
       createdBy: contributor.user,
@@ -184,7 +174,7 @@ describe.each(transports)('Content items: row scope ($name)', (t) => {
   })
 
   it('PERM-7 lets an editor delete an item', async () => {
-    const doomed = await createItem({
+    const doomed = await seedItem(payload, {
       title: 'To delete',
       status: 'idea',
       createdBy: contributor.user,

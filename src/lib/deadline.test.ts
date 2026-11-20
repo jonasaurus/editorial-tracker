@@ -31,7 +31,7 @@ describe('isPlainDate', () => {
   })
 })
 
-describe('todayInCopenhagen', () => {
+describe('todayInCopenhagen (DL-1)', () => {
   it.each([
     ['winter time (UTC+1), late evening UTC', '2026-11-18T23:30:00.000Z', '2026-11-19'],
     [
@@ -80,7 +80,7 @@ describe('addDays', () => {
   })
 })
 
-describe('getDeadlineState', () => {
+describe('getDeadlineState (DL-2, DL-3)', () => {
   const today = '2026-11-19'
 
   it.each([
@@ -110,7 +110,7 @@ describe('getDeadlineState', () => {
   })
 })
 
-describe('formatDeadline', () => {
+describe('formatDeadline (DL-4)', () => {
   const today = '2026-11-19'
 
   it.each([

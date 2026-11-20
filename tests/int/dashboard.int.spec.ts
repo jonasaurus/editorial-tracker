@@ -4,9 +4,9 @@ import { beforeAll, describe, expect, it } from 'vitest'
 
 import { getDashboardData } from '@/lib/dashboard/query'
 import type { DashboardParams } from '@/lib/dashboard/params'
-import type { ContentItem, User } from '@/payload-types'
+import type { User } from '@/payload-types'
 
-import { createUser } from './helpers'
+import { createUser, seedItem } from './helpers'
 
 let payload: Payload
 let editor: User
@@ -24,31 +24,6 @@ const DEFAULTS: DashboardParams = {
   sort: 'deadline',
   dir: 'asc',
   item: null,
-}
-
-type ItemInput = Pick<ContentItem, 'title' | 'type'> &
-  Partial<Pick<ContentItem, 'status' | 'archived'>> & { createdBy: User; authors: User[] }
-
-/** Creates an item for test setup. Access control is off. */
-function createItem({
-  title,
-  type,
-  status,
-  archived,
-  createdBy,
-  authors,
-}: ItemInput): Promise<ContentItem> {
-  return payload.create({
-    collection: 'content-items',
-    data: {
-      title,
-      type,
-      status: status ?? 'idea',
-      archived: archived ?? false,
-      createdBy: createdBy.id,
-      authors: authors.map((author) => author.id),
-    },
-  })
 }
 
 async function titles(user: User, params: Partial<DashboardParams> = {}): Promise<string[]> {
@@ -87,8 +62,8 @@ beforeAll(async () => {
     role: 'contributor',
   })
 
-  await createItem({ title: 'A first', type: 'article', createdBy: first, authors: [first] })
-  await createItem({
+  await seedItem(payload, { title: 'A first', type: 'article', createdBy: first, authors: [first] })
+  await seedItem(payload, {
     title: 'B both',
     type: 'video',
     status: 'draft',
@@ -96,22 +71,27 @@ beforeAll(async () => {
     authors: [first, second],
   })
   // The second contributor is only the creator here (DASH-3).
-  await createItem({ title: 'C by second', type: 'podcast', createdBy: second, authors: [editor] })
-  await createItem({
+  await seedItem(payload, {
+    title: 'C by second',
+    type: 'podcast',
+    createdBy: second,
+    authors: [editor],
+  })
+  await seedItem(payload, {
     title: 'D published',
     type: 'newsletter',
     status: 'published',
     createdBy: editor,
     authors: [editor],
   })
-  await createItem({
+  await seedItem(payload, {
     title: 'E archived',
     type: 'article',
     archived: true,
     createdBy: second,
     authors: [second],
   })
-  await createItem({
+  await seedItem(payload, {
     title: 'F only archived',
     type: 'article',
     archived: true,

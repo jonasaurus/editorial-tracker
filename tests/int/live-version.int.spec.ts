@@ -7,26 +7,16 @@ import { getDashboardVersion } from '@/lib/dashboard/version'
 import { todayInCopenhagen } from '@/lib/deadline'
 import type { ContentItem, User } from '@/payload-types'
 
-import { type Actor, createActor, rest } from './helpers'
+import { type Actor, createActor, rest, seedItem } from './helpers'
 
 let payload: Payload
 let editor: Actor
 let contributor: Actor
 let other: Actor
 
-/** Creates an item for test setup. Access control is off. */
-function seedItem(createdBy: User, change: Partial<ContentItem> = {}): Promise<ContentItem> {
-  return payload.create({
-    collection: 'content-items',
-    data: {
-      title: 'Live',
-      type: 'article',
-      status: 'idea',
-      ...change,
-      createdBy: createdBy.id,
-      authors: [createdBy.id],
-    },
-  })
+/** An item that `createdBy` created and authors. */
+function seedOwnItem(createdBy: User, change: Partial<ContentItem> = {}): Promise<ContentItem> {
+  return seedItem(payload, { title: 'Live', ...change, createdBy, authors: [createdBy] })
 }
 
 /** `updatedAt` has millisecond resolution. A short wait makes sure two writes do not share it. */
@@ -70,9 +60,9 @@ beforeAll(async () => {
 
 describe('getDashboardVersion (Local API)', () => {
   it('LIVE-1, DL-1: has the form <today>:<count>:<latest updatedAt>', async () => {
-    await seedItem(contributor.user)
+    await seedOwnItem(contributor.user)
     await tick()
-    const latest = await seedItem(other.user, { archived: true })
+    const latest = await seedOwnItem(other.user, { archived: true })
     const version = await getDashboardVersion(payload, editor.user)
     expect(version).toBe(
       `${todayInCopenhagen()}:${await readableCount(editor.user)}:${latest.updatedAt}`,
@@ -82,12 +72,14 @@ describe('getDashboardVersion (Local API)', () => {
   it('LIVE-1: counts archived items too', async () => {
     const before = parts(await getDashboardVersion(payload, editor.user))
     await tick()
-    await seedItem(contributor.user, { archived: true })
+    await seedOwnItem(contributor.user, { archived: true })
     const after = parts(await getDashboardVersion(payload, editor.user))
     expect(after.count).toBe(before.count + 1)
   })
 
   it('LIVE-1, PERM-1: a contributor count includes only own items', async () => {
+    await seedOwnItem(contributor.user)
+    await seedOwnItem(other.user)
     const version = parts(await getDashboardVersion(payload, contributor.user))
     const all = await payload.count({ collection: 'content-items' })
     expect(version.count).toBe(await readableCount(contributor.user))
@@ -147,12 +139,12 @@ describe('getDashboardVersion (Local API)', () => {
     // Each write changes the version. After the delete, the version can be equal to the first
     // one again (same items as before the create). The page shows that same state, so that is OK.
     for (let index = 1; index < versions.length; index++) {
-      expect(versions[index]).not.toBe(versions[index - 1])
+      expect(versions[index], `the version after write ${index}`).not.toBe(versions[index - 1])
     }
   })
 
   it('LIVE-1: the contributor version changes after a change to an own item', async () => {
-    const item = await seedItem(contributor.user)
+    const item = await seedOwnItem(contributor.user)
     const before = await getDashboardVersion(payload, contributor.user)
     await tick()
     await payload.update({
@@ -166,7 +158,7 @@ describe('getDashboardVersion (Local API)', () => {
   })
 
   it('PERM-1: the contributor version does not change when an editor changes an item of another user', async () => {
-    const item = await seedItem(other.user)
+    const item = await seedOwnItem(other.user)
     const before = await getDashboardVersion(payload, contributor.user)
 
     await tick()
@@ -243,7 +235,7 @@ describe('GET /api/content-items/version (REST)', () => {
   })
 
   it('does not hide GET /api/content-items/<id>', async () => {
-    const item = await seedItem(editor.user)
+    const item = await seedOwnItem(editor.user)
     const response = await rest('GET', editor, ['content-items', String(item.id)])
     expect(response.status).toBe(200)
     expect(response.body).toMatchObject({ id: item.id, title: item.title })

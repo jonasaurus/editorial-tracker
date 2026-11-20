@@ -14,6 +14,7 @@ import {
   toBoardItem,
   getBoardEmpty,
 } from './board'
+import { boardItem as item } from './board.fixture'
 
 const TODAY = '2026-11-19'
 
@@ -37,22 +38,6 @@ function doc(change: Partial<ContentItem> = {}): ContentItem {
     type: 'article',
     createdAt: '2026-11-01T00:00:00.000Z',
     updatedAt: '2026-11-01T00:00:00.000Z',
-    ...change,
-  }
-}
-
-let nextId = 1
-function item(change: Partial<BoardItem> = {}): BoardItem {
-  return {
-    id: nextId++,
-    title: 'A title',
-    type: 'article',
-    status: 'draft',
-    deadline: null,
-    publishedAt: null,
-    archived: false,
-    authorNames: [],
-    creatorName: null,
     ...change,
   }
 }

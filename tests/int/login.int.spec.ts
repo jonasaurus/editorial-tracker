@@ -32,7 +32,7 @@ async function loginToken(email: string): Promise<string> {
 
 const jwtHeaders = (token: string) => new Headers({ Authorization: `JWT ${token}` })
 
-describe('Auth config', () => {
+describe('Auth config (LOGIN-1, LOGIN-4)', () => {
   it('sets an 8-hour session, the lockout defaults and secure off without COOKIE_SECURE', () => {
     const auth = payload.collections.users.config.auth
     expect(auth.tokenExpiration).toBe(28_800)
@@ -152,7 +152,7 @@ describe('LOGIN-4 lockout', () => {
   })
 })
 
-describe('Logout', () => {
+describe('Logout (DASH-6)', () => {
   it('revokes only the session of the token, and a second logout does not throw', async () => {
     const user = await freshUser()
     const tokenA = await loginToken(user.email)

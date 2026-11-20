@@ -3,24 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { STATUSES } from '@/lib/items'
 
 import type { BoardItem } from './board'
+import { boardItem as item } from './board.fixture'
 import { buildList, compareForList, getListEmpty } from './list'
 import type { ListSort, SortDir } from './params'
-
-let nextId = 1
-function item(change: Partial<BoardItem> = {}): BoardItem {
-  return {
-    id: nextId++,
-    title: 'A title',
-    type: 'article',
-    status: 'draft',
-    deadline: null,
-    publishedAt: null,
-    archived: false,
-    authorNames: [],
-    creatorName: null,
-    ...change,
-  }
-}
 
 const titles = (items: BoardItem[]) => items.map((i) => i.title)
 

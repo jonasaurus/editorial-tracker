@@ -2,9 +2,10 @@ import config from '@payload-config'
 import { getPayload, type Payload } from 'payload'
 import { beforeAll, describe, expect, it } from 'vitest'
 
+import { authorIds } from '@/collections/ContentItems/rules'
 import type { ContentItem, User } from '@/payload-types'
 
-import { createActor, transports, type Actor } from './helpers'
+import { createActor, readItem, seedItem, transports, type Actor } from './helpers'
 
 let payload: Payload
 
@@ -15,25 +16,14 @@ type ItemInput = Partial<Pick<ContentItem, 'status' | 'archived' | 'deadline'>> 
 
 let itemCount = 0
 
-/** Creates an item for test setup. Access control is off, and no user means no value rules. */
-function createItem({ createdBy, authors, ...rest }: ItemInput): Promise<ContentItem> {
+/** An item with its own title. */
+function createItem(input: ItemInput): Promise<ContentItem> {
   itemCount += 1
-  return payload.create({
-    collection: 'content-items',
-    data: {
-      title: `Item ${itemCount}`,
-      type: 'article',
-      status: 'idea',
-      ...rest,
-      createdBy: createdBy.id,
-      authors: authors.map((author) => author.id),
-    },
-  })
+  return seedItem(payload, { title: `Item ${itemCount}`, ...input })
 }
 
-/** The ids in a relationship list. */
-const ids = (authors: ContentItem['authors']) =>
-  (authors ?? []).map((author) => (typeof author === 'number' ? author : author.id)).sort()
+/** The author ids, sorted. */
+const ids = (authors: ContentItem['authors']) => authorIds(authors).sort()
 
 /** The id of a relationship value. */
 const idOf = (value: ContentItem['createdBy']) =>
@@ -155,12 +145,13 @@ describe.each(transports)('Content items: value rules ($name)', (t) => {
       expect(stored.status).toBe('review')
     })
 
-    it('PERM-3 forbids a contributor to unpublish an own item', async () => {
+    it('PERM-2, PERM-3 forbids a contributor to unpublish an own item (access rejects it)', async () => {
       const item = await ownItem({ status: 'published' })
 
       const result = await t.update(contributor, 'content-items', item.id, { status: 'review' })
 
       expect(result.status).toBe(403)
+      expect((await readItem(payload, item.id)).status).toBe('published')
     })
 
     it('PERM-3 lets an editor publish and unpublish', async () => {
@@ -197,20 +188,22 @@ describe.each(transports)('Content items: value rules ($name)', (t) => {
       expect(unarchived.doc?.archived).toBe(false)
     })
 
-    it('PERM-5 forbids a contributor to archive an own published item', async () => {
+    it('PERM-2, PERM-5 forbids a contributor to archive an own published item (access rejects it)', async () => {
       const item = await ownItem({ status: 'published' })
 
       const result = await t.update(contributor, 'content-items', item.id, { archived: true })
 
       expect(result.status).toBe(403)
+      expect((await readItem(payload, item.id)).archived).toBe(false)
     })
 
-    it('PERM-5 forbids a contributor to unarchive an own published item', async () => {
+    it('PERM-2, PERM-5 forbids a contributor to unarchive an own published item (access rejects it)', async () => {
       const item = await ownItem({ status: 'published', archived: true })
 
       const result = await t.update(contributor, 'content-items', item.id, { archived: false })
 
       expect(result.status).toBe(403)
+      expect((await readItem(payload, item.id)).archived).toBe(true)
     })
 
     it('PERM-5 lets an editor archive and unarchive a published item', async () => {

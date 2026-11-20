@@ -40,7 +40,9 @@ describe('Seed (ROLE-4)', () => {
   it('sets publishedAt on published items (MODEL-2)', () => {
     const published = items.filter((item) => item.status === 'published')
     expect(published.length).toBeGreaterThan(0)
-    for (const item of published) expect(item.publishedAt).toBeTruthy()
+    for (const item of published) {
+      expect(item.publishedAt, item.title).toEqual(expect.any(String))
+    }
   })
 
   it('sets createdBy and puts the creator in authors (MODEL-1, AUTH-1)', () => {

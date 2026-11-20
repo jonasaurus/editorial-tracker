@@ -17,9 +17,16 @@ const UNKNOWN_USER = 999_999
 async function failed(write: Promise<{ status: number }>): Promise<boolean> {
   try {
     return (await write).status >= 400
-  } catch {
-    return true
+  } catch (error) {
+    // Only the database error counts. Another error fails the test.
+    if (isForeignKeyError(error)) return true
+    throw error
   }
+}
+
+function isForeignKeyError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  return error.message.includes('FOREIGN KEY') || isForeignKeyError(error.cause)
 }
 
 beforeAll(async () => {

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { STATUSES, type ItemStatus, type Role } from '@/lib/items'
 
 import { type BoardItem, buildBoard } from './board'
+import { boardItem as item } from './board.fixture'
 import {
   MOVE_INSTRUCTIONS,
   announceMove,
@@ -17,22 +18,6 @@ import {
 
 const TODAY = '2026-11-19'
 const AT = '2026-11-19T21:00:00.000Z'
-
-let nextId = 1
-function item(change: Partial<BoardItem> = {}): BoardItem {
-  return {
-    id: nextId++,
-    title: 'A title',
-    type: 'article',
-    status: 'draft',
-    deadline: null,
-    publishedAt: null,
-    archived: false,
-    authorNames: [],
-    creatorName: null,
-    ...change,
-  }
-}
 
 describe('canMoveItem (DND-1, PERM-2, PERM-6)', () => {
   const cases: [Role, ItemStatus, boolean, boolean][] = []
