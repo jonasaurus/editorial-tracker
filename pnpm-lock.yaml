@@ -38,9 +38,6 @@ importers:
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
-      dotenv:
-        specifier: 16.4.7
-        version: 16.4.7
       geist:
         specifier: 1.8.2
         version: 1.8.2(next@16.4.2(@babel/core@7.29.7)(@playwright/test@1.58.2)(@types/node@24.19.2)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(sass@1.77.4))
@@ -90,6 +87,9 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.14)
+      dotenv:
+        specifier: 16.4.7
+        version: 16.4.7
       eslint:
         specifier: ^9.16.0
         version: 9.39.5(jiti@2.7.0)

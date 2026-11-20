@@ -1,7 +1,7 @@
 import { GeistMono } from 'geist/font/mono'
 import { GeistSans } from 'geist/font/sans'
 import type { Metadata } from 'next'
-import React from 'react'
+import type { ReactNode } from 'react'
 
 import { Toaster } from '@/components/ui/sonner'
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: 'Plan content from idea to published.',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body>

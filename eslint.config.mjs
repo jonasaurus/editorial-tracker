@@ -25,8 +25,9 @@ export default defineConfig([
       ],
     },
   },
-  // Generated files
+  // Generated files, and local agent tools (not in git)
   globalIgnores([
+    '.claude/',
     '.next/',
     'next-env.d.ts',
     'src/payload-types.ts',

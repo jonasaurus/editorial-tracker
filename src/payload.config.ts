@@ -35,7 +35,6 @@ export default buildConfig({
     // failed write (for example, an unknown author id) could save a part of the change.
     transactionOptions: {},
   }),
-  plugins: [],
   // ROLE-4: seed the demo data on the first start, when the database has no users.
   onInit: async (payload) => {
     if (process.env.SEED_ON_START !== 'false') await seed(payload)
