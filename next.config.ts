@@ -16,6 +16,21 @@ const nextConfig: NextConfig = {
     // Upgrades follow the release-age rule and `pnpm audit`, not this nudge.
     agentUpgrade: false,
   },
+  // Do not tell clients which framework runs the app.
+  poweredByHeader: false,
+  // Security headers on all routes, the Admin panel and the REST API included.
+  // No page may show the app in a frame (clickjacking).
+  headers: () => [
+    {
+      source: '/:path*',
+      headers: [
+        { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      ],
+    },
+  ],
   webpack: (webpackConfig: { resolve: { extensionAlias?: Record<string, string[]> } }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
