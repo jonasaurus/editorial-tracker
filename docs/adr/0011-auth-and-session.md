@@ -24,3 +24,4 @@ The app has its own login page (`/login`, spec LOGIN-1 to LOGIN-4). The Admin pa
 - After 8 hours the user must log in again. Unsaved edits in the dialog are lost.
 - An unknown email gives the answer faster than a wrong password, because Payload skips the password hash. A timing attack can find out which emails exist. We accept this for a small newsroom tool. The REST login (`/api/users/login`) also shows Payload's own lockout message.
 - Behind HTTPS, set `COOKIE_SECURE=true`.
+- The Payload config has no `serverURL` and no `csrf` list. Thus Payload accepts a cookie from every Origin, and only the `SameSite=Lax` cookie stops cross-site requests. At deployment, set `serverURL` and `csrf` to the public URL. Then change the LOGIN-1 Origin test in `login.int.spec.ts`.

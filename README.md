@@ -148,6 +148,6 @@ TODO: on these dates, upgrade the package and remove its entries from `ignoreGhs
 - A mobile layout for the board.
 - Dark mode, for journalists who work late to meet a deadline. All colours are tokens (`@theme` in `globals.css`). Thus dark mode needs a second set of token values and a switch, but no component changes.
 - Notifications when the status of an item changes (for example in Slack). A Payload `afterChange` hook on `content-items` adds a job to the Payload jobs queue. Thus a slow Slack API does not delay the save.
-- Deployment.
+- Deployment. At deployment, set `serverURL` and `csrf` in the Payload config to the public URL. Today only the `SameSite=Lax` cookie protects the REST API from cross-site requests (ADR 0011).
 - End-to-end tests (Playwright).
 - A CI check that the migrations match the collections.
