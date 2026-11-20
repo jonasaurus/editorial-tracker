@@ -15,9 +15,8 @@ const SESSION_COOKIE = 'payload-token'
  *   POST, so the action would fail. Each action checks the session itself.
  */
 export function proxy(request: NextRequest) {
-  const { method, nextUrl, headers, cookies } = request
+  const { method, nextUrl, cookies } = request
   if (method !== 'GET' && method !== 'HEAD') return NextResponse.next()
-  if (headers.has('next-action')) return NextResponse.next()
   if (cookies.has(SESSION_COOKIE)) return NextResponse.next()
   if (nextUrl.pathname === '/login') return NextResponse.next()
 
