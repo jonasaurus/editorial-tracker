@@ -39,6 +39,10 @@ export const TYPE_LABELS: Record<ItemType, string> = {
   newsletter: 'Newsletter',
 }
 
+/** A relationship value as a populated user. Null for an id (not populated) and for no value. */
+export const populatedUser = (value: number | User | null | undefined): User | null =>
+  typeof value === 'object' ? value : null
+
 export const ROLES = allOf<Role>()(['editor', 'contributor'])
 
 export const ROLE_LABELS: Record<Role, string> = {

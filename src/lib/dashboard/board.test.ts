@@ -12,6 +12,7 @@ import {
   formatColumnCount,
   formatCounts,
   toBoardItem,
+  getBoardEmpty,
 } from './board'
 
 const TODAY = '2026-11-19'
@@ -413,5 +414,22 @@ describe('formatColumnCount', () => {
     [0, 2, '0', '2 archived'],
   ])('writes %i and %i archived as "%s" and %s', (count, archivedCount, text, archived) => {
     expect(formatColumnCount(count, archivedCount)).toEqual({ count: text, archived })
+  })
+})
+
+describe('getBoardEmpty', () => {
+  it('EMPTY-1: no item at all gives no-items, also with filters', () => {
+    expect(getBoardEmpty({ hasAnyItem: false, filtered: false, itemCount: 0 })).toBe('no-items')
+    expect(getBoardEmpty({ hasAnyItem: false, filtered: true, itemCount: 0 })).toBe('no-items')
+  })
+
+  it('EMPTY-3: filters that hide all items give no-results', () => {
+    expect(getBoardEmpty({ hasAnyItem: true, filtered: true, itemCount: 0 })).toBe('no-results')
+  })
+
+  it('EMPTY-2: in all other cases the columns show their own empty text', () => {
+    expect(getBoardEmpty({ hasAnyItem: true, filtered: true, itemCount: 2 })).toBe('none')
+    // Only archived items exist, and Show archived is off.
+    expect(getBoardEmpty({ hasAnyItem: true, filtered: false, itemCount: 0 })).toBe('none')
   })
 })

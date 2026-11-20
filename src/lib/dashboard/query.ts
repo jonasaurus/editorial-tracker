@@ -3,7 +3,7 @@ import type { Payload, Where } from 'payload'
 import type { User } from '@/payload-types'
 
 import { toBoardItem, type BoardItem } from './board'
-import type { DashboardParams } from './params'
+import { hasFilters, type DashboardParams } from './params'
 
 export type AuthorOption = { id: number; name: string }
 
@@ -74,8 +74,7 @@ export async function getDashboardData(
   const items = docs.map(toBoardItem)
 
   const activeShown = items.filter((item) => !item.archived).length
-  const filtered = params.type !== null || author !== null
-  const total = filtered
+  const total = hasFilters(params)
     ? (await payload.count({ collection: 'content-items', ...access, where: ACTIVE })).totalDocs
     : activeShown
 

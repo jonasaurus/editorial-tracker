@@ -1,6 +1,6 @@
 import { getDeadlineState, type IsoTimestamp, type PlainDate } from '@/lib/deadline'
-import { type ItemStatus, type ItemType, STATUSES } from '@/lib/items'
-import type { ContentItem, User } from '@/payload-types'
+import { type ItemStatus, type ItemType, populatedUser, STATUSES } from '@/lib/items'
+import type { ContentItem } from '@/payload-types'
 
 /** The view data of one item on the board. No Payload documents and no emails go to the client. */
 export type BoardItem = {
@@ -46,11 +46,6 @@ export type CountParts = {
   archived: string | null
 }
 
-/** The name of a populated user, else null. */
-function userName(value: number | User | null | undefined): string | null {
-  return typeof value === 'object' && value !== null ? value.name : null
-}
-
 /** Maps a content item with populated users (depth 1) to view data. Unpopulated ids are skipped. */
 export function toBoardItem(doc: ContentItem): BoardItem {
   return {
@@ -61,8 +56,8 @@ export function toBoardItem(doc: ContentItem): BoardItem {
     deadline: doc.deadline || null,
     publishedAt: doc.publishedAt ?? null,
     archived: doc.archived === true,
-    authorNames: (doc.authors ?? []).flatMap((author) => userName(author) ?? []),
-    creatorName: userName(doc.createdBy),
+    authorNames: (doc.authors ?? []).flatMap((author) => populatedUser(author)?.name ?? []),
+    creatorName: populatedUser(doc.createdBy)?.name ?? null,
   }
 }
 
@@ -125,6 +120,27 @@ export function buildBoard(items: BoardItem[], today: PlainDate): Board {
     overdue: active.filter((item) => getDeadlineState(item, today) === 'overdue').length,
     archived: items.length - active.length,
   }
+}
+
+/**
+ * The empty state of the whole board, in this order:
+ * `no-items`: the user can read no item at all (EMPTY-1).
+ * `no-results`: Type or Author filters are set and hide all items (EMPTY-3).
+ * `none`: the columns show their own empty text (EMPTY-2).
+ */
+export type BoardEmptyKind = 'none' | 'no-items' | 'no-results'
+
+export function getBoardEmpty(input: {
+  /** False when the user can read no item at all, archived included. */
+  hasAnyItem: boolean
+  /** Type or Author filter set (`hasFilters`). */
+  filtered: boolean
+  /** Loaded items (after filters and Show archived). */
+  itemCount: number
+}): BoardEmptyKind {
+  if (!input.hasAnyItem) return 'no-items'
+  if (input.filtered && input.itemCount === 0) return 'no-results'
+  return 'none'
 }
 
 /** DASH-4: the app bar counts. `total` = all active items the user can read, with no filters. */

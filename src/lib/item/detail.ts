@@ -1,6 +1,7 @@
 import type { Payload } from 'payload'
 
 import type { ItemParam } from '@/lib/dashboard/params'
+import { populatedUser } from '@/lib/items'
 import type { ContentItem, User } from '@/payload-types'
 
 import type { ItemDetail, ItemDialogState, UserOption } from './types'
@@ -20,20 +21,20 @@ async function getUserOptions(payload: Payload, user: User): Promise<UserOption[
 
 /** The item as view data. Authors that are not populated (no read access) are skipped. */
 function toItemDetail(item: ContentItem): ItemDetail {
-  const authors = (item.authors ?? []).flatMap((author) =>
-    typeof author === 'number' ? [] : [{ id: author.id, name: author.name }],
-  )
-  const creator = item.createdBy
+  const authors = (item.authors ?? []).flatMap((value) => {
+    const author = populatedUser(value)
+    return author ? [{ id: author.id, name: author.name }] : []
+  })
   return {
     id: item.id,
     title: item.title,
     status: item.status,
     type: item.type,
     // An empty text field means no deadline (ADR 0007).
-    deadline: item.deadline ? item.deadline : null,
+    deadline: item.deadline || null,
     archived: item.archived === true,
     authors,
-    creatorName: creator !== null && typeof creator === 'object' ? creator.name : null,
+    creatorName: populatedUser(item.createdBy)?.name ?? null,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     publishedAt: item.publishedAt ?? null,

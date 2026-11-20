@@ -9,7 +9,7 @@ import { ItemDialog } from '@/components/item/item-dialog'
 import { LiveUpdates } from '@/components/live/live-updates'
 import { toPathWithQuery } from '@/lib/auth/next-path'
 import { requireSession } from '@/lib/auth/session'
-import { buildBoard, formatCounts } from '@/lib/dashboard/board'
+import { buildBoard, formatCounts, getBoardEmpty } from '@/lib/dashboard/board'
 import { buildList, getListEmpty } from '@/lib/dashboard/list'
 import {
   dashboardHref,
@@ -72,11 +72,10 @@ export default async function DashboardPage({ searchParams }: Props) {
 
   // EMPTY-3: "Clear filters" keeps the view, the status tab and the sort.
   const clearHref = href({ type: null, author: null, archived: false })
-  const empty: BoardEmpty = !hasAnyItem
-    ? { kind: 'no-items' }
-    : hasFilters(params) && items.length === 0
-      ? { kind: 'no-results', total, clearHref }
-      : { kind: 'none' }
+  const filtered = hasFilters(params)
+  const emptyKind = getBoardEmpty({ hasAnyItem, filtered, itemCount: items.length })
+  const empty: BoardEmpty =
+    emptyKind === 'no-results' ? { kind: emptyKind, total, clearHref } : { kind: emptyKind }
 
   const list = buildList(items, params)
   const listView = (className?: string) => (
@@ -92,7 +91,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       itemHref={itemHref}
       empty={getListEmpty({
         hasAnyItem,
-        filtered: hasFilters(params),
+        filtered,
         itemCount: items.length,
         rowCount: list.rows.length,
         status: params.status,
