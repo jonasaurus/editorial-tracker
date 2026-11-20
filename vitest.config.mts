@@ -10,6 +10,9 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
+          // One time zone on every machine. Copenhagen has daylight saving time, so the
+          // tests of the daylight saving days (DL-3) check real changes.
+          env: { TZ: 'Europe/Copenhagen' },
           include: ['src/**/*.test.ts'],
         },
       },
