@@ -36,7 +36,7 @@ export const versionEndpoint: Endpoint = {
   method: 'get',
   handler: async (req) => {
     const { user } = req
-    if (!user || user.collection !== 'users') {
+    if (!user) {
       return Response.json({ message: 'Not logged in.' }, { status: 401, headers: noStore })
     }
     const version = await getDashboardVersion(req.payload, user)

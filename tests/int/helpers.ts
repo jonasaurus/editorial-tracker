@@ -241,7 +241,10 @@ function toQueryParts(prefix: string, value: unknown): string[] {
     return Object.entries(value).flatMap(([key, item]) => toQueryParts(`${prefix}[${key}]`, item))
   }
   if (value === undefined) return []
-  return [`${encodeURIComponent(prefix)}=${encodeURIComponent(String(value))}`]
+  if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
+    throw new Error(`A query value must be a string, a number or a boolean: ${prefix}`)
+  }
+  return [`${encodeURIComponent(prefix)}=${encodeURIComponent(value)}`]
 }
 
 const restHandlers = {

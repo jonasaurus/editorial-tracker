@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
     // Upgrades follow the release-age rule and `pnpm audit`, not this nudge.
     agentUpgrade: false,
   },
-  webpack: (webpackConfig) => {
+  webpack: (webpackConfig: { resolve: { extensionAlias?: Record<string, string[]> } }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
