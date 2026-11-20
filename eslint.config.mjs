@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from 'eslint/config'
 import nextVitals from 'eslint-config-next/core-web-vitals'
 import nextTs from 'eslint-config-next/typescript'
+import tseslint from 'typescript-eslint'
 
 export default defineConfig([
   ...nextVitals,
@@ -23,6 +24,20 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^(_|ignore)',
         },
       ],
+    },
+  },
+  // Rules that use type information. They enforce what the code already does: no unsafe
+  // `any`, no promise without a handler, no switch that misses a member of a union.
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    extends: [tseslint.configs.recommendedTypeCheckedOnly],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: {
+      '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      '@typescript-eslint/no-deprecated': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
     },
   },
   // Generated files, and local agent tools (not in git)
