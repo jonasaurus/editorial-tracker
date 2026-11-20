@@ -1,10 +1,10 @@
 import { Forbidden, NotFound, ValidationError, type Payload } from 'payload'
 
-import { isItemRuleError } from '@/collections/ContentItems'
+import { isItemRuleError } from '@/collections/ContentItems/errors'
 import { isItemStatus } from '@/lib/items'
 import type { User } from '@/payload-types'
 
-import { parseItemInput } from './input'
+import { FIELD_MESSAGES, isId, parseItemInput } from './input'
 import type { FieldErrors, ItemActionResult, ItemField } from './types'
 
 const COLLECTION = 'content-items'
@@ -15,21 +15,10 @@ const STALE_MESSAGE = 'You cannot change this item now. Close it and open it aga
 /** The text when a moved item changed on the server (DND-4). */
 const MOVE_STALE_MESSAGE = 'This item changed on the server.'
 
-/** The messages for Payload field errors. The same texts as `parseItemInput`. */
-const FIELD_MESSAGES: Partial<Record<ItemField, string>> = {
-  title: 'Enter a title.',
-  deadline: 'Use a real date.',
-  authors: 'Choose valid authors.',
-}
-
 const ITEM_FIELDS: readonly ItemField[] = ['title', 'status', 'type', 'deadline', 'authors']
 
 const isItemField = (value: string): value is ItemField =>
   ITEM_FIELDS.some((field) => field === value)
-
-/** An item id is a positive safe integer. Another value cannot identify an item. */
-const isItemId = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isSafeInteger(value) && value > 0
 
 /**
  * True when every author id is a user. Payload does not check this: the database foreign key
@@ -56,11 +45,11 @@ const UNKNOWN_AUTHORS: ItemActionResult = {
 /** The field errors of a Payload `ValidationError`. Null: an error is not on an item field. */
 function toFieldErrors(error: ValidationError): FieldErrors | null {
   const errors: FieldErrors = {}
-  for (const { path, message } of error.data.errors) {
+  for (const { path } of error.data.errors) {
     // A path can have a suffix, for example `authors.0`.
     const field = path.split('.')[0] ?? path
     if (!isItemField(field)) return null
-    errors[field] ??= FIELD_MESSAGES[field] ?? message
+    errors[field] ??= FIELD_MESSAGES[field]
   }
   return errors
 }
@@ -136,7 +125,7 @@ export async function updateItemAs(
   id: unknown,
   raw: unknown,
 ): Promise<ItemActionResult> {
-  if (!isItemId(id)) return { ok: false, reason: 'no-access' }
+  if (!isId(id)) return { ok: false, reason: 'no-access' }
   const parsed = parseItemInput(raw)
   if (!parsed.ok) return { ok: false, reason: 'invalid', errors: parsed.errors }
   if (!(await authorsExist(payload, user, parsed.input.authors))) return UNKNOWN_AUTHORS
@@ -164,7 +153,7 @@ export async function setArchivedAs(
   id: unknown,
   archived: unknown,
 ): Promise<ItemActionResult> {
-  if (!isItemId(id)) return { ok: false, reason: 'no-access' }
+  if (!isId(id)) return { ok: false, reason: 'no-access' }
   if (typeof archived !== 'boolean') {
     return { ok: false, reason: 'rejected', message: 'The change is not valid.' }
   }
@@ -192,9 +181,9 @@ export async function moveItemAs(
   id: unknown,
   status: unknown,
 ): Promise<ItemActionResult> {
-  if (!isItemId(id)) return { ok: false, reason: 'no-access' }
+  if (!isId(id)) return { ok: false, reason: 'no-access' }
   if (!isItemStatus(status)) {
-    return { ok: false, reason: 'invalid', errors: { status: 'Choose a status.' } }
+    return { ok: false, reason: 'invalid', errors: { status: FIELD_MESSAGES.status } }
   }
   try {
     const doc = await payload.update({

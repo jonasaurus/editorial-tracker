@@ -1,41 +1,19 @@
-import {
-  APIError,
-  type Access,
-  type CollectionBeforeChangeHook,
-  type CollectionConfig,
-  type Where,
+import type {
+  Access,
+  CollectionBeforeChangeHook,
+  CollectionConfig,
+  FieldHook,
+  Where,
 } from 'payload'
 
+import { isEditor, isEditorUser, isLoggedIn } from '@/access'
+import { versionEndpoint } from '@/lib/dashboard/version'
+import { isPlainDate } from '@/lib/deadline'
+import { STATUS_LABELS, STATUSES, toOptions, TYPE_LABELS, TYPES } from '@/lib/items'
 import type { ContentItem } from '@/payload-types'
 
-import { isEditor, isEditorUser, isLoggedIn } from '../../access'
-import { versionEndpoint } from '../../lib/dashboard/version'
-import { isPlainDate } from '../../lib/deadline'
-import { checkItemChange, type RuleId } from './rules'
-
-/**
- * A rejected item change: 403, the message, and the rule id in `data`.
- * The name is explicit: the production build minifies class names, and
- * Payload hides the message of an error without a name or data.
- */
-class ItemRuleError extends APIError<{ rule: RuleId }> {
-  constructor(rule: RuleId, message: string) {
-    super(message, 403, { rule })
-    this.name = 'ItemRuleError'
-  }
-}
-
-/**
- * True for an `ItemRuleError`. Checks the status and the rule id, not the class name.
- * Payload's own `Forbidden` has no `data`, so the two do not mix.
- */
-export function isItemRuleError(error: unknown): error is APIError<{ rule: RuleId }> {
-  if (!(error instanceof APIError) || error.status !== 403) return false
-  const data: unknown = error.data
-  return (
-    typeof data === 'object' && data !== null && 'rule' in data && typeof data.rule === 'string'
-  )
-}
+import { ItemRuleError } from './errors'
+import { checkItemChange } from './rules'
 
 /** "Own item": the user is the creator or an author (spec §4). */
 const ownItems = (userId: number): Where => ({
@@ -80,6 +58,10 @@ const enforceValueRules: CollectionBeforeChangeHook<ContentItem> = ({
   return result.data
 }
 
+/** An empty field means no deadline (ADR 0007). */
+const emptyToNull: FieldHook<ContentItem, ContentItem['deadline']> = ({ value }) =>
+  value === '' ? null : value
+
 export const ContentItems: CollectionConfig = {
   slug: 'content-items',
   admin: {
@@ -109,23 +91,13 @@ export const ContentItems: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'idea',
-      options: [
-        { label: 'Idea', value: 'idea' },
-        { label: 'Draft', value: 'draft' },
-        { label: 'Review', value: 'review' },
-        { label: 'Published', value: 'published' },
-      ],
+      options: toOptions(STATUSES, STATUS_LABELS),
     },
     {
       name: 'type',
       type: 'select',
       required: true,
-      options: [
-        { label: 'Article', value: 'article' },
-        { label: 'Video', value: 'video' },
-        { label: 'Podcast', value: 'podcast' },
-        { label: 'Newsletter', value: 'newsletter' },
-      ],
+      options: toOptions(TYPES, TYPE_LABELS),
     },
     {
       name: 'authors',
@@ -144,8 +116,7 @@ export const ContentItems: CollectionConfig = {
       validate: (value: string | null | undefined) =>
         !value || isPlainDate(value) || 'Use a real date in the format YYYY-MM-DD.',
       hooks: {
-        // An empty field means no deadline.
-        beforeChange: [({ value }) => (value === '' ? null : value)],
+        beforeChange: [emptyToNull],
       },
     },
     {

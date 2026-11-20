@@ -1,8 +1,9 @@
+import type { User } from '@/payload-types'
 import { DEMO_PASSWORD, DEMO_USERS } from '@/seed/seed'
 
 /** The demo users for the login screen (ROLE-4). */
 export type DemoLogins = {
-  users: readonly { name: string; email: string; role: 'editor' | 'contributor' }[]
+  users: readonly Pick<User, 'name' | 'email' | 'role'>[]
   password: string
 }
 

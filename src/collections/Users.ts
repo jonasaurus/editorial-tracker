@@ -1,6 +1,7 @@
 import type { Access, CollectionConfig } from 'payload'
 
-import { isEditor, isEditorField, isEditorUser, isLoggedIn } from '../access'
+import { isEditor, isEditorField, isEditorUser, isLoggedIn } from '@/access'
+import { ROLE_LABELS, ROLES, toOptions } from '@/lib/items'
 
 /** Editors change every user. Other users change only their own account. */
 const isEditorOrSelf: Access = ({ req: { user } }) => {
@@ -47,10 +48,7 @@ export const Users: CollectionConfig = {
       name: 'role',
       type: 'select',
       required: true,
-      options: [
-        { label: 'Editor', value: 'editor' },
-        { label: 'Contributor', value: 'contributor' },
-      ],
+      options: toOptions(ROLES, ROLE_LABELS),
       // The first user is an editor: the Admin panel "create first user" form skips field access.
       defaultValue: async ({ req }) => {
         const { totalDocs } = await req.payload.count({ collection: 'users', req })

@@ -31,7 +31,8 @@ function editedFieldsChanged(original: ContentItem, next: Partial<ContentItem>):
   )
 }
 
-export type RuleId = 'PERM-2' | 'PERM-3' | 'PERM-6' | 'AUTH-2'
+export const RULE_IDS = ['PERM-2', 'PERM-3', 'PERM-6', 'AUTH-2'] as const
+export type RuleId = (typeof RULE_IDS)[number]
 
 export type RuleResult =
   { ok: true; data: Partial<ContentItem> } | { ok: false; rule: RuleId; message: string }

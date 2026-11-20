@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { DemoLogins } from '@/lib/auth/demo-users'
+import { ROLE_LABELS } from '@/lib/items'
 
 import { login } from './actions'
 import type { LoginState } from './state'
@@ -17,11 +18,6 @@ type Props = {
   /** Demo logins. The server sets them only in development. */
   demo?: DemoLogins
 }
-
-const roleLabel = {
-  editor: 'Editor',
-  contributor: 'Contributor',
-} as const
 
 export function LoginForm({ next, demo }: Props) {
   const [state, formAction, pending] = useActionState<LoginState, FormData>(login, undefined)
@@ -113,7 +109,7 @@ export function LoginForm({ next, demo }: Props) {
                     className="flex h-11 w-full items-center justify-between px-3 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground focus-visible:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     {user.name}
-                    <span className="text-xs text-muted-foreground">{roleLabel[user.role]}</span>
+                    <span className="text-xs text-muted-foreground">{ROLE_LABELS[user.role]}</span>
                   </button>
                 </li>
               ))}

@@ -1,6 +1,7 @@
 import { type ItemStatus, type ItemType, type Role, STATUS_LABELS, TYPE_LABELS } from '@/lib/items'
 
-import type { FieldErrors, ItemDetail, ItemInput } from './types'
+import { FIELD_MESSAGES } from './input'
+import type { FieldErrors, ItemDetail, ItemInput, TextPart } from './types'
 
 /** The values of the item form. */
 export type ItemFormValues = {
@@ -11,9 +12,6 @@ export type ItemFormValues = {
   /** In the shown order. */
   authorIds: number[]
 }
-
-/** One part of the kicker line above the title. `strong`: ink and semibold. */
-export type KickerPart = { text: string; strong: boolean }
 
 /** The first values: the saved item, or a new item (ITEM-11, AUTH-1). */
 export function initialValues(item: ItemDetail | null, userId: number): ItemFormValues {
@@ -50,7 +48,7 @@ export function isDirty(initial: ItemFormValues, current: ItemFormValues): boole
 
 /** Client-side checks before a save. Empty object: no errors. */
 export function validateValues(values: ItemFormValues): FieldErrors {
-  return values.title.trim() === '' ? { title: 'Enter a title.' } : {}
+  return values.title.trim() === '' ? { title: FIELD_MESSAGES.title } : {}
 }
 
 /** The values as the input of a Server Action. */
@@ -79,8 +77,8 @@ export function isArmed(input: {
   )
 }
 
-const DOT: KickerPart = { text: ' · ', strong: false }
-const ARROW: KickerPart = { text: ' → ', strong: false }
+const DOT: TextPart = { text: ' · ', strong: false }
+const ARROW: TextPart = { text: ' → ', strong: false }
 
 /**
  * The kicker line (design-system §6 "Kicker"). `item` null: a new item.
@@ -90,9 +88,9 @@ const ARROW: KickerPart = { text: ' → ', strong: false }
  * - Archived: "Article · Review · **Archived**". The fields are read-only, so the status
  *   does not change. Only "Archived" is strong.
  */
-export function getKicker(item: ItemDetail | null, selected: ItemStatus): KickerPart[] {
+export function getKicker(item: ItemDetail | null, selected: ItemStatus): TextPart[] {
   if (!item) return [{ text: 'New item', strong: false }]
-  const type: KickerPart = { text: TYPE_LABELS[item.type], strong: false }
+  const type: TextPart = { text: TYPE_LABELS[item.type], strong: false }
   const saved = STATUS_LABELS[item.status]
   if (item.archived) {
     return [type, DOT, { text: saved, strong: false }, DOT, { text: 'Archived', strong: true }]

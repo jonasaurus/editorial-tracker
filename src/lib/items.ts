@@ -4,15 +4,18 @@ export type ItemStatus = ContentItem['status']
 export type ItemType = ContentItem['type']
 export type Role = User['role']
 
-/** The statuses in board order (BOARD-1). */
-export const STATUSES = [
-  'idea',
-  'draft',
-  'review',
-  'published',
-] as const satisfies readonly ItemStatus[]
+/**
+ * A list that must hold every member of the union `T`. A missing member is a compile error,
+ * so a new status, type or role in the collection cannot be forgotten here.
+ */
+const allOf =
+  <T>() =>
+  <const List extends readonly T[]>(list: [T] extends [List[number]] ? List : never) =>
+    list
 
-/** True for a known item status. */
+/** The statuses in board order (BOARD-1). The collection builds its options from this list. */
+export const STATUSES = allOf<ItemStatus>()(['idea', 'draft', 'review', 'published'])
+
 export const isItemStatus = (value: unknown): value is ItemStatus =>
   STATUSES.some((status) => status === value)
 
@@ -24,12 +27,10 @@ export const STATUS_LABELS: Record<ItemStatus, string> = {
 }
 
 /** The item types in menu order. */
-export const TYPES = [
-  'article',
-  'video',
-  'podcast',
-  'newsletter',
-] as const satisfies readonly ItemType[]
+export const TYPES = allOf<ItemType>()(['article', 'video', 'podcast', 'newsletter'])
+
+export const isItemType = (value: unknown): value is ItemType =>
+  TYPES.some((type) => type === value)
 
 export const TYPE_LABELS: Record<ItemType, string> = {
   article: 'Article',
@@ -38,7 +39,15 @@ export const TYPE_LABELS: Record<ItemType, string> = {
   newsletter: 'Newsletter',
 }
 
+export const ROLES = allOf<Role>()(['editor', 'contributor'])
+
 export const ROLE_LABELS: Record<Role, string> = {
   editor: 'Editor',
   contributor: 'Contributor',
 }
+
+/** The options of a Payload `select` field: one source for the values and the labels. */
+export const toOptions = <T extends string>(
+  values: readonly T[],
+  labels: Record<T, string>,
+): { label: string; value: T }[] => values.map((value) => ({ label: labels[value], value }))

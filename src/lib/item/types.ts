@@ -3,6 +3,9 @@ import type { ItemStatus, ItemType, Role } from '@/lib/items'
 /** A user in the author picker. No email goes to the page. */
 export type UserOption = { id: number; name: string; role: Role }
 
+/** One part of a text line (kicker, metadata). `strong`: shown in ink. */
+export type TextPart = { text: string; strong: boolean }
+
 /** The view data of one item in the dialog (ITEM-3). */
 export type ItemDetail = {
   id: number

@@ -1,9 +1,6 @@
 import { formatPlainDate, toCopenhagenDate, toCopenhagenTime } from '@/lib/deadline'
 
-import type { ItemDetail } from './types'
-
-/** One part of the metadata line. `strong`: ink; else muted. */
-export type MetaPart = { text: string; strong: boolean }
+import type { ItemDetail, TextPart } from './types'
 
 export type ItemMeta = {
   /** "Created by <name> · <date>". Null: no creator ("Created <date>"). */
@@ -11,7 +8,7 @@ export type ItemMeta = {
   /** The created date, for example "3 Nov" or "today". */
   created: string
   /** "Archived …", "Published … · updated …" or "Updated …" (design-system §6). */
-  event: MetaPart[]
+  event: TextPart[]
 }
 
 /** "today" when the Copenhagen date of `iso` is `today`, else "3 Nov" (DL-1, DL-4). */
@@ -48,7 +45,7 @@ export function formatItemMeta(
 function formatEvent(
   item: Pick<ItemDetail, 'updatedAt' | 'publishedAt' | 'status' | 'archived'>,
   today: string,
-): MetaPart[] {
+): TextPart[] {
   // MODEL-3 has no `archivedAt`. An archived item is read-only (PERM-6), so the last update
   // is the archive.
   if (item.archived) {

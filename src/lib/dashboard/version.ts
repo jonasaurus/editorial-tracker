@@ -2,7 +2,7 @@ import type { Endpoint, Payload } from 'payload'
 
 import type { User } from '@/payload-types'
 
-import { todayInCopenhagen } from '../deadline'
+import { todayInCopenhagen } from '@/lib/deadline'
 import { formatVersion } from './live'
 
 /**

@@ -1,4 +1,4 @@
-import { isItemStatus, type ItemStatus, type ItemType, type Role, TYPES } from '@/lib/items'
+import { isItemStatus, isItemType, type ItemStatus, type ItemType, type Role } from '@/lib/items'
 
 export type DashboardView = 'board' | 'list'
 
@@ -48,10 +48,6 @@ const DEFAULTS: DashboardParams = {
 /** The first value of a param. */
 function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value
-}
-
-function isItemType(value: string | undefined): value is ItemType {
-  return TYPES.some((type) => type === value)
 }
 
 function isListSort(value: string | undefined): value is ListSort {
