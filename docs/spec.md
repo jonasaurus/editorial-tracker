@@ -19,7 +19,7 @@ A small newsroom plans its content in the Editorial Tracker. An item (an article
 - **ROLE-2** Only an editor can change the `role` field of a user.
 - **ROLE-3** Only an editor can open the Admin panel.
 - **ROLE-4** The app seeds 1 editor and 2 contributors with known passwords. The login screen lists them in development only ("Demo users · dev only").
-- **ROLE-5** Every logged-in user can read all users (for the author picker). Without a login, nobody can read users.
+- **ROLE-5** Every logged-in user can read all users (for the author picker). Without a login, nobody can read users. Thus every logged-in user can read the emails of all users over the API. The pages send names only.
 - **ROLE-6** A user can change their own user (for example the name). Only an editor can create users, change other users, delete users or unlock a locked account.
 - **ROLE-7** The first user gets the role `editor`. Later users get `contributor` unless an editor sets the role.
 
