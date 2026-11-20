@@ -130,11 +130,11 @@ The item dialog is the content view. It is a dialog over the dashboard, not a se
 - **ITEM-6** Publish is one atomic update. If validation fails, the status does not change.
 - **ITEM-7** The dialog closes after a successful save or publish. The card moves to its new column. No success toast. "Save changes" with no edits closes the dialog and sends no request.
 - **ITEM-8** Archived item: a banner at the top ("This item is archived. It is read-only and hidden unless “Show archived” is on. Unarchive to edit it again."), all fields read-only, and one button: "Unarchive". After a successful unarchive the dialog stays open and the fields can be edited. If the user cannot unarchive the item (a contributor and a published item, PERM-5), the banner text is "This item is archived. Only editors can unarchive a published item." and the button is "Close".
-- **ITEM-13** A contributor who opens an own published item (not archived) sees it read-only (PERM-2): a banner "This item is published. Only editors can change it.", all fields read-only, and one button: "Close".
 - **ITEM-9** Archive and Unarchive ask for confirmation. If the form has unsaved edits, the edits are discarded. After a successful archive the dialog closes.
 - **ITEM-10** Close (Esc, ✕, Cancel, click outside) asks for confirmation when the form has unsaved edits. Browser Back discards edits.
 - **ITEM-11** New item: kicker "New item", status Idea, type Article, the current user in authors. The current user cannot remove themselves here (the server adds the creator back, AUTH-1). Buttons: "Cancel" and "Create item".
 - **ITEM-12** Not found: the same small dialog for a missing id, a malformed id and an item without access. Text: "This item does not exist, or you do not have access to it." Next step: "Check the link, or ask an editor to add you as an author." Button: "Close".
+- **ITEM-13** A contributor who opens an own published item (not archived) sees it read-only (PERM-2): a banner "This item is published. Only editors can change it.", all fields read-only, and one button: "Close".
 
 ### 6.7 Empty states
 

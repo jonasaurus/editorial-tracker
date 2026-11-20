@@ -136,6 +136,7 @@ TODO: on these dates, upgrade the package and remove its entries from `ignoreGhs
 - Contributors can move items between Idea, Draft and Review in any order. Only editors publish or unpublish.
 - No success toasts and no undo. The moved card is the feedback. To undo a move, drag it back.
 - Concurrent edits: the last save wins.
+- No paging: the dashboard loads all items that the user can read. This is correct for a small newsroom. Published items stay on the board, so a large newsroom needs a limit on the Published column (for example the last 30 days) or paging in the list.
 - Mobile: list view only. The board is for desktop.
 - SQLite keeps the setup simple. Production would use Postgres.
 
