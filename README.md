@@ -104,6 +104,39 @@ A session lasts 8 hours. After 5 failed logins, an account is locked for 10 minu
 
 The full rules are in [docs/spec.md](docs/spec.md). The design rules are in [docs/design-system.md](docs/design-system.md). All decisions are in [docs/adr](docs/adr/).
 
+## API
+
+The Payload REST API gives the routes. The same rules apply as in the app: the server filters the items by role, so a contributor gets only own items (spec PERM-1, API-1).
+
+| Task | Route |
+|---|---|
+| Log in, get a token | `POST /api/users/login` |
+| Get all items (that the user can read) | `GET /api/content-items` |
+| Filter by status | `GET /api/content-items?where[status][equals]=draft` |
+| Create an item | `POST /api/content-items` |
+| Change the status | `PATCH /api/content-items/:id` with `{ "status": "review" }` |
+| Archive an item | `PATCH /api/content-items/:id` with `{ "archived": true }` |
+
+Status values: `idea`, `draft`, `review`, `published`. Type values: `article`, `video`, `podcast`, `newsletter`.
+
+Example with a demo user (the app runs on port 3000, the example needs `jq`):
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:3000/api/users/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"mette@example.com","password":"demo-password"}' | jq -r .token)
+
+curl -s -X POST http://localhost:3000/api/content-items \
+  -H "Authorization: JWT $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"title":"Election night","type":"article","status":"idea","deadline":"2026-12-01"}'
+
+curl -s -X PATCH http://localhost:3000/api/content-items/<id> \
+  -H "Authorization: JWT $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"status":"draft"}'
+```
+
+A rule error gives `403` with the reason, for example `{"errors":[{"message":"Only editors can publish items."}]}`.
+
 ## Supply-chain safety
 
 The npm registry usually finds and removes a hijacked package in a few days. Thus this repo waits before it uses a new release.
