@@ -3,18 +3,7 @@
 import { Archive, ArrowRight, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Dialog as DialogPrimitive } from 'radix-ui'
-import {
-  type ComponentProps,
-  type KeyboardEvent,
-  type SubmitEvent,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from 'react'
+import { type SubmitEvent, useEffect, useId, useMemo, useState, useTransition } from 'react'
 
 import { createItem, setArchived, updateItem } from '@/app/(frontend)/item/actions'
 import { AuthorsField } from '@/components/item/authors-field'
@@ -23,6 +12,7 @@ import { CloseButton } from '@/components/item/close-button'
 import { ConfirmDialog } from '@/components/item/confirm-dialog'
 import { DeadlineField } from '@/components/item/deadline-field'
 import { StatusStepper } from '@/components/item/status-stepper'
+import { TitleField } from '@/components/item/title-field'
 import { usePauseLive } from '@/components/live/live-updates'
 import { Button } from '@/components/ui/button'
 import {
@@ -32,9 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { loginPath } from '@/lib/auth/next-path'
 import type { PlainDate } from '@/lib/deadline'
 import { getItemAbilities, type ItemAbilities } from '@/lib/item/abilities'
+import { currentLoginPath, NO_ACCESS_MESSAGE } from '@/lib/item/failure'
 import {
   getKicker,
   initialValues,
@@ -48,7 +38,7 @@ import { formatItemMeta } from '@/lib/item/meta'
 import type { FieldErrors, ItemActionResult, ItemDetail, ItemDialogState } from '@/lib/item/types'
 import { isItemType, type Role, TYPE_LABELS, TYPES } from '@/lib/items'
 import { showError } from '@/lib/toast'
-import { cn } from '@/lib/utils'
+import { assertNever, cn } from '@/lib/utils'
 
 type FormState = Exclude<ItemDialogState, { kind: 'not-found' }>
 
@@ -124,10 +114,10 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
       switch (result.reason) {
         case 'session-expired':
           // ERR-5: log in again, then come back to this URL.
-          router.push(loginPath(window.location.pathname + window.location.search))
+          router.push(currentLoginPath())
           return
         case 'no-access':
-          showError('You no longer have access to this item.')
+          showError(NO_ACCESS_MESSAGE)
           onClose()
           return
         case 'invalid':
@@ -136,6 +126,8 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
         case 'rejected':
           showError(failTitle, result.message)
           return
+        default:
+          assertNever(result)
       }
     })
   }
@@ -377,53 +369,6 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
         onConfirm={() => changeArchived(false)}
       />
     </form>
-  )
-}
-
-/** True where the browser sizes a textarea to its text (`field-sizing: content`). */
-function supportsFieldSizing(): boolean {
-  return typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content')
-}
-
-type TitleFieldProps = Omit<ComponentProps<'textarea'>, 'onChange' | 'value' | 'rows'> & {
-  value: string
-  onValueChange: (value: string) => void
-}
-
-/**
- * The title: a textarea that grows with its text, but keeps one line of text. A long title wraps
- * and stays fully visible. Enter saves the form (the same as Enter in an input). Line breaks from
- * paste or drop become spaces.
- */
-function TitleField({ value, onValueChange, className, ...props }: TitleFieldProps) {
-  const ref = useRef<HTMLTextAreaElement>(null)
-
-  // Browsers without `field-sizing: content` (for example Firefox): set the height from the text.
-  useLayoutEffect(() => {
-    const field = ref.current
-    if (!field || supportsFieldSizing()) return
-    field.style.height = 'auto'
-    // `scrollHeight` has no border. The bottom border is part of the height (`border-box`).
-    field.style.height = `${field.scrollHeight + field.offsetHeight - field.clientHeight}px`
-  }, [value])
-
-  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    // Do not touch Enter while an IME composes text: there Enter confirms the text.
-    if (event.key !== 'Enter' || event.nativeEvent.isComposing) return
-    event.preventDefault()
-    event.currentTarget.form?.requestSubmit()
-  }
-
-  return (
-    <textarea
-      ref={ref}
-      rows={1}
-      value={value}
-      onChange={(event) => onValueChange(event.target.value.replace(/\r\n|\r|\n/g, ' '))}
-      onKeyDown={onKeyDown}
-      className={cn('block field-sizing-content resize-none overflow-hidden', className)}
-      {...props}
-    />
   )
 }
 

@@ -1,7 +1,8 @@
-import { Archive, ArrowDown, ArrowUp } from 'lucide-react'
+import { ArrowDown, ArrowUp } from 'lucide-react'
 import Link from 'next/link'
 import { Fragment } from 'react'
 
+import { ArchivedBadge } from '@/components/dashboard/archived-badge'
 import { StatusMarker } from '@/components/dashboard/status-marker'
 import { DeadlineText } from '@/components/deadline-text'
 import {
@@ -120,13 +121,7 @@ function ItemRow({ item, today, href }: { item: BoardItem; today: PlainDate; hre
           >
             {item.title}
           </Link>
-          {/* LIST-4: a label, so the archived state is not colour only (same as the item card). */}
-          {archived && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-input px-1.5 text-xs leading-4 text-muted-foreground">
-              <Archive aria-hidden className="size-3" />
-              Archived
-            </span>
-          )}
+          {archived && <ArchivedBadge />}
         </span>
       </TableCell>
       <TableCell className={cn(cell, 'text-muted-foreground')}>{TYPE_LABELS[item.type]}</TableCell>

@@ -1,15 +1,16 @@
 'use client'
 
 import { useDraggable } from '@dnd-kit/react'
-import { Archive } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 import { DeadlineText } from '@/components/deadline-text'
+import { ArchivedBadge } from '@/components/dashboard/archived-badge'
 import type { BoardItem } from '@/lib/dashboard/board'
+import type { ItemDragData } from '@/lib/dashboard/dnd'
 import type { PlainDate } from '@/lib/deadline'
 import { formatPublished } from '@/lib/item/meta'
-import { isItemStatus, type ItemStatus, TYPE_LABELS } from '@/lib/items'
+import { TYPE_LABELS } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
 type Props = {
@@ -17,22 +18,6 @@ type Props = {
   today: PlainDate
   /** The URL that opens the item in the dialog (BOARD-4, ITEM-1). */
   href: string
-}
-
-/** The data that a dragged item carries (DND-1, DND-5). `deadline`: for the drop place (BOARD-2). */
-export type ItemDragData = { title: string; status: ItemStatus; deadline: string | null }
-
-/** Narrows the `data` of a drag source to `ItemDragData`. */
-export function isItemDragData(value: unknown): value is ItemDragData {
-  if (typeof value !== 'object' || value === null) return false
-  return (
-    'title' in value &&
-    typeof value.title === 'string' &&
-    'status' in value &&
-    isItemStatus(value.status) &&
-    'deadline' in value &&
-    (value.deadline === null || typeof value.deadline === 'string')
-  )
 }
 
 /** "Sara Nielsen, Jonas Berg · created by Mette Holm", or "Created by Mette Holm" with no authors. */
@@ -71,12 +56,7 @@ function ItemCardBody({ item, today, title }: Omit<Props, 'href'> & { title: Rea
       <div className="flex h-4 items-center justify-between gap-3 text-xs">
         <span className="flex min-w-0 items-center gap-2 text-muted-foreground">
           <span className="truncate">{TYPE_LABELS[item.type]}</span>
-          {item.archived && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-input px-1.5 leading-4">
-              <Archive aria-hidden className="size-3" />
-              Archived
-            </span>
-          )}
+          {item.archived && <ArchivedBadge className="shrink-0" />}
         </span>
         {/* BOARD-3: a published card shows the published date (the Published column sorts by it). */}
         {item.status === 'published' && item.publishedAt ? (

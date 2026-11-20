@@ -5,10 +5,16 @@ import { ArrowDown, Lock } from 'lucide-react'
 import { Fragment } from 'react'
 
 import { EmptyState } from '@/components/dashboard/empty-state'
-import { DraggableItemCard, ItemCard, isItemDragData } from '@/components/dashboard/item-card'
+import { DraggableItemCard, ItemCard } from '@/components/dashboard/item-card'
 import { StatusMarker } from '@/components/dashboard/status-marker'
 import { formatColumnCount, type BoardColumn as Column } from '@/lib/dashboard/board'
-import { canDropOn, canMoveItem, getDropIndex } from '@/lib/dashboard/dnd'
+import {
+  canMoveItem,
+  type DropSlotKind,
+  getDropIndex,
+  getDropSlot,
+  isItemDragData,
+} from '@/lib/dashboard/dnd'
 import type { PlainDate } from '@/lib/deadline'
 import { STATUS_LABELS, type ItemStatus, type Role } from '@/lib/items'
 import { cn } from '@/lib/utils'
@@ -26,13 +32,6 @@ const emptyText: Record<ItemStatus, { title: string; text: string }> = {
     text: 'Move an item to Review. An editor publishes it.',
   },
 }
-
-/**
- * The drop slot of a column during a drag (design-system §4 "Drop targets").
- * `locked`: the user cannot drop here (DND-2), at the top. `publish`: over Published (DND-3).
- * `move`: over another column. `publish` and `move` show where the item will land (BOARD-2).
- */
-type Slot = 'locked' | 'publish' | 'move' | null
 
 type Props = {
   column: Column
@@ -52,18 +51,9 @@ export function BoardColumn({ column, today, role, hrefs, showEmptyState = true 
   const { source } = useDragOperation()
 
   const drag = isItemDragData(source?.data) ? source.data : null
-  const slot: Slot =
-    drag === null || drag.status === column.status
-      ? null
-      : !canDropOn(role, drag, column.status)
-        ? 'locked'
-        : isDropTarget
-          ? column.status === 'published'
-            ? 'publish'
-            : 'move'
-          : null
+  const slot = getDropSlot(role, drag, column.status, isDropTarget)
 
-  // BOARD-2: the slot sits where the item will land. The id breaks a tie of equal titles.
+  // BOARD-2: a `move` or `publish` slot sits where the item will land. The id breaks a tie of equal titles.
   const place =
     drag && (slot === 'move' || slot === 'publish') && column.items.length > 0
       ? {
@@ -156,7 +146,7 @@ function DropSlot({
   status,
   className,
 }: {
-  slot: NonNullable<Slot>
+  slot: NonNullable<DropSlotKind>
   status: ItemStatus
   className?: string
 }) {

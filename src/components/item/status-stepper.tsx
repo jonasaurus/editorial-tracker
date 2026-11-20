@@ -3,6 +3,7 @@
 import { Check, Lock } from 'lucide-react'
 import type { CSSProperties } from 'react'
 
+import { STATUS_FILL } from '@/components/dashboard/status-marker'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { type ItemStatus, STATUS_LABELS, STATUSES } from '@/lib/items'
 import { cn } from '@/lib/utils'
@@ -10,15 +11,7 @@ import { cn } from '@/lib/utils'
 /** The chevron depth (design-system §3). */
 const DEPTH = '10px'
 
-/** The selected fill per status. Static class names, so Tailwind finds them. */
-const fill: Record<ItemStatus, string> = {
-  idea: 'bg-status-idea',
-  draft: 'bg-status-draft',
-  review: 'bg-status-review',
-  published: 'bg-status-published',
-}
-
-/** Read-only: the selected step at 50% (design-system §3). */
+/** Read-only: the selected step at 50% (design-system §3). Static class names, so Tailwind finds them. */
 const fillReadOnly: Record<ItemStatus, string> = {
   idea: 'bg-status-idea/50',
   draft: 'bg-status-draft/50',
@@ -139,7 +132,7 @@ function stepStyle(step: {
   if (selected) {
     // Draft (gold) has an ink label.
     return cn(
-      fill[status],
+      STATUS_FILL[status],
       'font-semibold',
       status === 'draft' ? 'text-foreground' : 'text-primary-foreground',
     )

@@ -1,6 +1,7 @@
 import { type BoardColumn, type BoardItem, compareInColumn } from '@/lib/dashboard/board'
+import type { PlainDate } from '@/lib/deadline'
 import { getItemMode, getLockedStatuses } from '@/lib/item/abilities'
-import { STATUS_LABELS, type ItemStatus, type Role } from '@/lib/items'
+import { isItemStatus, STATUS_LABELS, type ItemStatus, type Role } from '@/lib/items'
 
 /**
  * A drop: the item gets the new status (DND-1). `at`: the time of the drop as an ISO timestamp,
@@ -19,6 +20,22 @@ export type MoveEvent = 'start' | 'over' | 'end' | 'cancel'
 export const MOVE_INSTRUCTIONS =
   'Press Enter to open the item. To move it, press Space. Use the Left and Right arrow keys to choose a column. Press Space again to drop it, or press Escape to cancel.'
 
+/** The data that a dragged item carries (DND-1, DND-5). `deadline`: for the drop place (BOARD-2). */
+export type ItemDragData = { title: string; status: ItemStatus; deadline: PlainDate | null }
+
+/** Narrows the `data` of a drag source to `ItemDragData`. The library types it as unknown. */
+export function isItemDragData(value: unknown): value is ItemDragData {
+  if (typeof value !== 'object' || value === null) return false
+  return (
+    'title' in value &&
+    typeof value.title === 'string' &&
+    'status' in value &&
+    isItemStatus(value.status) &&
+    'deadline' in value &&
+    (value.deadline === null || typeof value.deadline === 'string')
+  )
+}
+
 /** DND-1, PERM-2, PERM-6: only items that the user can edit move. */
 export function canMoveItem(role: Role, item: Pick<BoardItem, 'archived' | 'status'>): boolean {
   return getItemMode(role, item) === 'edit'
@@ -31,6 +48,25 @@ export function canDropOn(
   status: ItemStatus,
 ): boolean {
   return status !== item.status && !getLockedStatuses(role).includes(status)
+}
+
+/**
+ * The drop slot of a column during a drag (design-system §4 "Drop targets").
+ * `locked`: the user cannot drop here (DND-2). `publish`: the item is over Published (DND-3).
+ * `move`: the item is over another column. Null: no slot.
+ */
+export type DropSlotKind = 'locked' | 'publish' | 'move' | null
+
+export function getDropSlot(
+  role: Role,
+  drag: Pick<BoardItem, 'status'> | null,
+  status: ItemStatus,
+  isDropTarget: boolean,
+): DropSlotKind {
+  if (drag === null || drag.status === status) return null
+  if (!canDropOn(role, drag, status)) return 'locked'
+  if (!isDropTarget) return null
+  return status === 'published' ? 'publish' : 'move'
 }
 
 /**

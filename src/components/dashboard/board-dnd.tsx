@@ -23,21 +23,23 @@ import {
 
 import { moveItem } from '@/app/(frontend)/item/actions'
 import { BoardColumn } from '@/components/dashboard/board-column'
-import { isItemDragData, ItemCardOverlay } from '@/components/dashboard/item-card'
+import { ItemCardOverlay } from '@/components/dashboard/item-card'
 import { usePauseLive } from '@/components/live/live-updates'
-import { loginPath } from '@/lib/auth/next-path'
 import { buildBoard, type BoardItem } from '@/lib/dashboard/board'
 import {
   announceMove,
   applyMove,
   canDropOn,
   getMoveError,
+  isItemDragData,
   MOVE_INSTRUCTIONS,
 } from '@/lib/dashboard/dnd'
 import type { PlainDate } from '@/lib/deadline'
+import { currentLoginPath, NO_ACCESS_MESSAGE } from '@/lib/item/failure'
 import type { ItemActionResult } from '@/lib/item/types'
 import { isItemStatus, type ItemStatus, type Role } from '@/lib/items'
 import { showError } from '@/lib/toast'
+import { assertNever } from '@/lib/utils'
 
 type Props = {
   items: BoardItem[]
@@ -229,10 +231,10 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
         switch (result.reason) {
           case 'session-expired':
             // ERR-5: log in again, then come back to this URL.
-            router.push(loginPath(window.location.pathname + window.location.search))
+            router.push(currentLoginPath())
             return
           case 'no-access':
-            showError('You no longer have access to this item.')
+            showError(NO_ACCESS_MESSAGE)
             router.refresh()
             return
           case 'rejected': {
@@ -247,6 +249,8 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
             router.refresh()
             return
           }
+          default:
+            assertNever(result)
         }
       })
     },

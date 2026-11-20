@@ -10,7 +10,9 @@ import {
   canDropOn,
   canMoveItem,
   getDropIndex,
+  getDropSlot,
   getMoveError,
+  isItemDragData,
 } from './dnd'
 
 const TODAY = '2026-11-19'
@@ -255,5 +257,50 @@ describe('announceMove (DND-5)', () => {
     expect(announceMove('cancel', 'Spring issue', 'review', 'published')).toBe(
       'The move is cancelled. Item "Spring issue" stays in Review.',
     )
+  })
+})
+
+describe('getDropSlot (DND-2, DND-3)', () => {
+  it.each([
+    ['no drag', 'editor', null, 'draft', true, null],
+    ['the column of the item', 'editor', 'draft', 'draft', true, null],
+    [
+      'a contributor, Published, not over it',
+      'contributor',
+      'review',
+      'published',
+      false,
+      'locked',
+    ],
+    ['a contributor, over Published', 'contributor', 'review', 'published', true, 'locked'],
+    ['an editor, not over the column', 'editor', 'review', 'published', false, null],
+    ['an editor, over Published', 'editor', 'review', 'published', true, 'publish'],
+    ['an editor, over another column', 'editor', 'published', 'review', true, 'move'],
+    ['a contributor, over another column', 'contributor', 'idea', 'draft', true, 'move'],
+  ] as const)('%s', (_name, role, from, status, isDropTarget, expected) => {
+    const drag = from === null ? null : { status: from }
+    expect(getDropSlot(role, drag, status, isDropTarget)).toBe(expected)
+  })
+})
+
+describe('isItemDragData', () => {
+  const data = { title: 'A title', status: 'draft', deadline: null }
+
+  it('accepts the data of an item card, with and without a deadline', () => {
+    expect(isItemDragData(data)).toBe(true)
+    expect(isItemDragData({ ...data, deadline: '2026-11-24' })).toBe(true)
+  })
+
+  it.each([
+    ['undefined', undefined],
+    ['null', null],
+    ['a string', 'draft'],
+    ['no title', { status: 'draft', deadline: null }],
+    ['a title that is not a string', { ...data, title: 1 }],
+    ['an unknown status', { ...data, status: 'done' }],
+    ['no deadline key', { title: 'A title', status: 'draft' }],
+    ['a deadline that is not a string', { ...data, deadline: 20261124 }],
+  ])('rejects %s', (_name, value) => {
+    expect(isItemDragData(value)).toBe(false)
   })
 })

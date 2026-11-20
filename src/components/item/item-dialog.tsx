@@ -9,6 +9,7 @@ import { ItemForm } from '@/components/item/item-form'
 import { NotFoundContent } from '@/components/item/not-found-dialog'
 import { usePauseLive } from '@/components/live/live-updates'
 import type { PlainDate } from '@/lib/deadline'
+import { NO_ACCESS_MESSAGE } from '@/lib/item/failure'
 import type { ItemDialogState } from '@/lib/item/types'
 import type { Role } from '@/lib/items'
 import { showError } from '@/lib/toast'
@@ -76,7 +77,7 @@ export function ItemDialog({ state, closeHref, today, user }: Props) {
     const previous = previousKind.current
     previousKind.current = state.kind
     if (previous !== 'edit' || state.kind !== 'not-found') return
-    showError('You no longer have access to this item.')
+    showError(NO_ACCESS_MESSAGE)
     close()
   }, [state.kind, close])
 

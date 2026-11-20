@@ -1,7 +1,8 @@
 import type { ItemStatus } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
-const fill: Record<ItemStatus, string> = {
+/** The fill per status (design-system §3). Static class names, so Tailwind finds them. */
+export const STATUS_FILL: Record<ItemStatus, string> = {
   idea: 'bg-status-idea',
   draft: 'bg-status-draft',
   review: 'bg-status-review',
@@ -23,7 +24,7 @@ export function StatusMarker({ status, className }: Props) {
       aria-hidden
       className={cn(
         'inline-block size-[0.71em] shrink-0 supports-[height:1cap]:size-[1cap]',
-        fill[status],
+        STATUS_FILL[status],
         className,
       )}
     />
