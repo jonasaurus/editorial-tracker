@@ -124,6 +124,7 @@ Known advisories that `pnpm audit` ignores (`auditConfig.ignoreGhsas`):
 | Package | Advisory | Why it does not affect this app | Fix allowed from |
 |---|---|---|---|
 | `next` 16.4.2 | GHSA-mfr8-8qww-v76h, GHSA-vc7v-qv4w-wrv8 | Only with `'use cache'` and root params. The app does not use them. | 2026-12-01 (16.4.5) |
+| `next` 16.4.2 | GHSA-7qx7-33qx-rqx2, GHSA-f3mh-rxg3-f5g2, GHSA-pc58-hwjq-p385, GHSA-rhh4-g77r-r9qj, GHSA-vvgp-ww4w-46vf | Each needs a feature that the app does not use: a remote image source, Edge runtime routes, a route handler that forwards a fetched response, `'use cache'`, Cache Components. | 2026-12-01 (16.4.5) |
 | `minimatch` 10.2.6 | GHSA-g3hv-75wg-m249 | Dev only (ESLint parser), with our own patterns. | 2026-11-24 (11.0.1) |
 
 TODO: on these dates, upgrade the package and remove its entries from `ignoreGhsas`.
