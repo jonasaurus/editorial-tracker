@@ -20,7 +20,7 @@ export type ItemAbilities = {
   lockedAuthorIds: number[]
 }
 
-/** Steps the user cannot select (ITEM-4). PERM-3: only editors publish. */
+/** PERM-3: only editors publish. */
 export function getLockedStatuses(role: Role): ItemStatus[] {
   return role === 'editor' ? [] : ['published']
 }
@@ -47,13 +47,12 @@ export function getItemAbilities(
   const lockedStatuses = getLockedStatuses(user.role)
   const none = { canArchive: false, canUnarchive: false }
 
-  // AUTH-1: the creator is always an author of a new item. The server adds it back anyway.
+  // ITEM-11, AUTH-1: the creator stays an author of a new item. The server adds it back anyway.
   if (!item) return { mode: 'edit', lockedStatuses, ...none, lockedAuthorIds: [user.id] }
 
   const mode = getItemMode(user.role, item)
 
-  // PERM-6, ITEM-8: an archived item is read-only. PERM-5: only an editor unarchives a
-  // published item.
+  // PERM-5: only an editor unarchives a published item.
   if (mode === 'archived') {
     return {
       mode: 'archived',
@@ -64,7 +63,6 @@ export function getItemAbilities(
     }
   }
 
-  // PERM-2, ITEM-13: a contributor cannot change a published item.
   if (mode === 'published-read-only') {
     return { mode: 'published-read-only', lockedStatuses, ...none, lockedAuthorIds: [] }
   }

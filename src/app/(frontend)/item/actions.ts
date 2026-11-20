@@ -11,12 +11,11 @@ import type { User } from '@/payload-types'
 
 /*
  * The item actions only check the session and call the core in `src/lib/item/save.ts`.
- * After a success, the action calls `refresh()`. This clears the client router's history cache
- * (BFCache): without it, Back to an older dashboard URL shows the items as they were before the
+ * After a success, the action calls `refresh()`. This clears the Next.js client Router Cache:
+ * without it, Back to an older dashboard URL shows the items as they were before the
  * save. The client then calls `router.replace` to close the dialog (ITEM-2, ITEM-7).
  */
 
-/** ERR-5: no valid session. The client opens the login page. */
 const SESSION_EXPIRED: ItemActionResult = { ok: false, reason: 'session-expired' }
 
 /** Refreshes the client router after a success, so no cached page shows old data. */

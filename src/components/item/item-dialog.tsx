@@ -34,7 +34,6 @@ export function ItemDialog({ state, closeHref, today, user }: Props) {
   const [confirmDiscard, setConfirmDiscard] = useState(false)
   const dirty = useRef(false)
   const pause = usePauseLive()
-  /** The release of the 'dialog' pause while the form has unsaved edits (LIVE-2). */
   const releaseDirty = useRef<(() => void) | null>(null)
 
   // ITEM-2: close with `replace`, and keep the filters.
@@ -88,7 +87,8 @@ export function ItemDialog({ state, closeHref, today, user }: Props) {
     <DialogPrimitive.Root open={open} onOpenChange={(next) => !next && requestClose()}>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-foreground/50 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
       <DialogPrimitive.Content
-        // The form has no description: the fields speak for themselves.
+        // Radix warns when the content has no description. `aria-describedby: undefined` turns the
+        // warning off: the form fields need no description.
         {...(isForm ? { 'aria-describedby': undefined } : {})}
         onOpenAutoFocus={(event) => {
           // ITEM-11: a new item starts in the title. Else the dialog itself gets the focus, so

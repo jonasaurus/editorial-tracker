@@ -45,8 +45,7 @@ const DEFAULTS: DashboardParams = {
   item: null,
 }
 
-/** The first value of a param. */
-function first(value: string | string[] | undefined): string | undefined {
+function firstValue(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value
 }
 
@@ -63,23 +62,23 @@ function parseId(value: string | undefined): number | null {
 
 /** Reads the dashboard params. Unknown or bad values give the default. */
 export function parseDashboardParams(searchParams: SearchParams, role: Role): DashboardParams {
-  const view = first(searchParams.view)
-  const type = first(searchParams.type)
-  const status = first(searchParams.status)
-  const sort = first(searchParams.sort)
-  const dir = first(searchParams.dir)
+  const view = firstValue(searchParams.view)
+  const type = firstValue(searchParams.type)
+  const status = firstValue(searchParams.status)
+  const sort = firstValue(searchParams.sort)
+  const dir = firstValue(searchParams.dir)
   return {
     view: view === 'list' ? 'list' : 'board',
     type: isItemType(type) ? type : null,
     // DASH-2: only editors filter by author.
-    author: role === 'editor' ? parseId(first(searchParams.author)) : null,
-    archived: first(searchParams.archived) === '1',
+    author: role === 'editor' ? parseId(firstValue(searchParams.author)) : null,
+    archived: firstValue(searchParams.archived) === '1',
     // Read in both views: the board keeps them, so the list restores the tab and sort.
     status: isItemStatus(status) ? status : null,
     sort: isListSort(sort) ? sort : DEFAULTS.sort,
     dir: dir === 'desc' ? 'desc' : 'asc',
     // ITEM-1: read for both roles and both views. Access decides what the dialog shows.
-    item: parseItem(first(searchParams.item)),
+    item: parseItem(firstValue(searchParams.item)),
   }
 }
 

@@ -41,7 +41,6 @@ export type ItemInput = {
 
 export type ItemField = keyof ItemInput
 
-/** One message per field. */
 export type FieldErrors = Partial<Record<ItemField, string>>
 
 /** The result of a Server Action on an item. Unknown server errors are thrown. */

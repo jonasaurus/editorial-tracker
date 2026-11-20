@@ -97,7 +97,6 @@ export function getDropIndex(
   return column.items.slice(0, column.count).filter((other) => compare(other, moved) < 0).length
 }
 
-/** A sentence ends with a period. */
 const withPeriod = (text: string) => (text.endsWith('.') ? text : `${text}.`)
 
 /** DND-4, ERR-2: the toast text after a failed move. */

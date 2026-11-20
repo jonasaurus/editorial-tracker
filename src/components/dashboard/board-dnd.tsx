@@ -51,11 +51,6 @@ type Props = {
   showEmptyState: boolean
 }
 
-/*
- * The sensors, plugins and texts are module constants: the provider compares them at each render
- * and compares functions by identity.
- */
-
 /**
  * One arrow key press moves the item by one column (DND-5). The keyboard sensor reads `offset`
  * at each key press. `onDragStart` measures the column pitch; the getter reads no layout.
@@ -74,6 +69,10 @@ const keyboardOptions = {
   },
 }
 
+/**
+ * `sensors` and `plugins` are module constants: the provider compares them at each render, and
+ * compares functions by identity.
+ */
 const sensors = [
   PointerSensor.configure({
     // A mouse or pen click on the link opens the item. A drag starts after 5px.
@@ -88,8 +87,8 @@ const sensors = [
   KeyboardSensor.configure(keyboardOptions),
 ]
 
-/** The item and the column of a drag operation, for the announcements and the drop. */
-function describe(operation: DragEndEvent['operation']) {
+/** The item and the column of a drag operation. Null when the source is not an item. */
+function describeDrag(operation: DragEndEvent['operation']) {
   const data = operation.source?.data
   if (!isItemDragData(data)) return null
   const target = operation.target?.id
@@ -113,18 +112,18 @@ function getAccessibility(role: Role) {
     screenReaderInstructions: { draggable: MOVE_INSTRUCTIONS },
     announcements: {
       dragstart({ operation }) {
-        const move = describe(operation)
+        const move = describeDrag(operation)
         return move ? announceMove('start', move.title, move.from, null) : undefined
       },
       dragover({ operation }) {
-        const move = describe(operation)
+        const move = describeDrag(operation)
         // The item starts over its own column. No text then, so the start text is not lost.
         if (!move || move.to === move.from) return undefined
         return announceMove('over', move.title, move.from, allowed(move.from, move.to))
       },
       dragend(event) {
         const { operation } = event
-        const move = describe(operation)
+        const move = describeDrag(operation)
         if (!move) return undefined
         if (isCancel(event)) return announceMove('cancel', move.title, move.from, null)
         return announceMove('end', move.title, move.from, allowed(move.from, move.to))
@@ -158,7 +157,6 @@ function stopArrowScrollGuard() {
   document.removeEventListener('keydown', preventArrowScroll, { capture: true })
 }
 
-/** Measures the distance between two columns, for the keyboard step. */
 function measureColumnPitch() {
   const [first, second] = document.querySelectorAll('[data-board-column]')
   if (!first || !second) return
@@ -174,10 +172,8 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
   const router = useRouter()
   const [optimisticItems, addOptimistic] = useOptimistic(items, applyMove)
   const columns = buildBoard(optimisticItems, today).columns
-  /** The item to focus after a drop, when the focus is lost. */
-  const focusId = useRef<number | null>(null)
+  const focusAfterDropId = useRef<number | null>(null)
   const pause = usePauseLive()
-  /** The release of the 'drag' pause during a drag (LIVE-2). */
   const releaseDrag = useRef<(() => void) | null>(null)
 
   const endDrag = useCallback(() => {
@@ -206,12 +202,12 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
       const { operation } = event
       endDrag()
       const id = operation.source?.id
-      const move = describe(operation)
+      const move = describeDrag(operation)
       // DND-2: no request for a cancel, the same column or a column the user cannot drop on.
       if (isCancel(event) || typeof id !== 'number' || !move || move.to === null) return
       if (!canDropOn(role, { status: move.from }, move.to)) return
       const { from, to } = move
-      focusId.current = id
+      focusAfterDropId.current = id
 
       startTransition(async () => {
         addOptimistic({ id, status: to, at: new Date().toISOString() })
@@ -259,9 +255,9 @@ export function BoardDnd({ items, today, role, hrefs, showEmptyState }: Props) {
 
   // After a drop the item is in a new column. Keep the focus on it (keyboard drop).
   useEffect(() => {
-    const id = focusId.current
+    const id = focusAfterDropId.current
     if (id === null) return
-    focusId.current = null
+    focusAfterDropId.current = null
     if (document.activeElement !== document.body) return
     document.querySelector<HTMLElement>(`[data-item-link="${id}"]`)?.focus()
   }, [optimisticItems])

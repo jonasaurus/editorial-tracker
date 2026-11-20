@@ -22,7 +22,6 @@ export const getSession = cache(async () => {
   return { user, canAccessAdmin: permissions.canAccessAdmin === true }
 })
 
-/** The logged-in user, or null. */
 export async function getUser() {
   return (await getSession()).user
 }

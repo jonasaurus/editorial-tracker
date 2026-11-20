@@ -6,7 +6,6 @@ type Relation = number | User | null | undefined
 const toId = (value: Relation): number | null =>
   value === null || value === undefined ? null : typeof value === 'number' ? value : value.id
 
-/** The ids in `authors`. */
 export const authorIds = (authors: ContentItem['authors']): number[] =>
   (authors ?? []).flatMap((author) => {
     const id = toId(author)

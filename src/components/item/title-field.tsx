@@ -4,7 +4,6 @@ import { type ComponentProps, type KeyboardEvent, useLayoutEffect, useRef } from
 
 import { cn } from '@/lib/utils'
 
-/** True where the browser sizes a textarea to its text (`field-sizing: content`). */
 function supportsFieldSizing(): boolean {
   return typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content')
 }

@@ -4,7 +4,6 @@ import { type ItemStatus, type ItemType, type Role, STATUS_LABELS, TYPE_LABELS }
 import { FIELD_MESSAGES } from './input'
 import type { FieldErrors, ItemDetail, ItemInput, TextPart } from './types'
 
-/** The values of the item form. */
 export type ItemFormValues = {
   title: string
   status: ItemStatus
@@ -28,7 +27,6 @@ export function initialValues(item: ItemDetail | null, userId: number): ItemForm
   }
 }
 
-/** True when both lists hold the same ids in the same order. */
 function sameOrderedIds(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((id, index) => id === b[index])
 }

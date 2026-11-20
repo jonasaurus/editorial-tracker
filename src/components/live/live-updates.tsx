@@ -46,7 +46,6 @@ type Props = {
 export function LiveUpdates({ version, children }: Props) {
   const router = useRouter()
   const baseline = useRef(version)
-  /** A refresh from this hook runs, and the page has not rendered a new version yet. */
   const refreshing = useRef(false)
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pauses = useRef<Record<PauseReason, number>>({ dialog: 0, confirm: 0, drag: 0, move: 0 })
@@ -73,7 +72,6 @@ export function LiveUpdates({ version, children }: Props) {
   useEffect(() => {
     let disposed = false
     let inFlight = false
-    /** Set after a 401. The next focus or visible event clears it. */
     let stopped = false
     let tickTimer: ReturnType<typeof setTimeout> | undefined
     let controller: AbortController | null = null
@@ -161,7 +159,6 @@ export function LiveUpdates({ version, children }: Props) {
     }
   }, [router])
 
-  // Clear the safety timer when the provider unmounts.
   useEffect(
     () => () => {
       if (refreshTimer.current !== null) clearTimeout(refreshTimer.current)

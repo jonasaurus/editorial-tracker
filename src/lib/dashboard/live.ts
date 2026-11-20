@@ -19,14 +19,10 @@ export function formatVersion(
   return `${today}:${count}:${latestUpdatedAt ?? '-'}`
 }
 
-/** The result of one poll of the version endpoint. */
 export type PollOutcome =
   { kind: 'version'; version: string } | { kind: 'unauthorized' } | { kind: 'error' }
 
-/**
- * Reads the version endpoint response. 200 with `{ version: string }` (not empty) → version.
- * 401 (any body) → unauthorized. Anything else (other status, bad body) → error.
- */
+/** Parses the version endpoint response. Any 401 is unauthorized. Any other bad response is an error. */
 export function toPollOutcome(status: number, body: unknown): PollOutcome {
   if (status === 401) return { kind: 'unauthorized' }
   if (status !== 200) return { kind: 'error' }
@@ -36,13 +32,11 @@ export function toPollOutcome(status: number, body: unknown): PollOutcome {
   return { kind: 'version', version }
 }
 
-/** The state of the live hook before a poll. */
 export type PollState = {
   /** The tab is hidden (LIVE-2). */
   hidden: boolean
   /** One or more pause reasons are active (LIVE-2). */
   paused: boolean
-  /** A version request runs. */
   inFlight: boolean
   /** A refresh from the hook runs and the page has not rendered a new version yet. */
   refreshing: boolean
@@ -50,15 +44,13 @@ export type PollState = {
   stopped: boolean
 }
 
-/** True when the hook may send a version request now: no flag in the state is true. */
 export function shouldPoll(state: PollState): boolean {
   return !(state.hidden || state.paused || state.inFlight || state.refreshing || state.stopped)
 }
 
 /**
- * What to do with a poll outcome. A version not equal to the baseline (the version of the
- * page on screen) → refresh. Unauthorized → refresh once and stop (the page sends the user
- * to the login page, ERR-5). Equal version or error → nothing.
+ * `baseline`: the version of the page on screen. Unauthorized gives one refresh, then a stop:
+ * the page render sends the user to the login page (ERR-5).
  */
 export function decidePoll(outcome: PollOutcome, baseline: string): 'refresh' | 'stop' | 'none' {
   switch (outcome.kind) {

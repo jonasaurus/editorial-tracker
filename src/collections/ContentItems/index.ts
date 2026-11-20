@@ -34,7 +34,7 @@ const canUpdate: Access = ({ req: { user } }) => {
   return { and: [ownItems(user.id), { status: { not_equals: 'published' } }] }
 }
 
-/** The server sets these fields. A request cannot set or change them. */
+/** MODEL-1, MODEL-2: the server sets these fields. A request cannot set or change them. */
 const serverOnly = { create: () => false, update: () => false }
 
 /**

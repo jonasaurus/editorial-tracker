@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 /** The chevron depth (design-system §3). */
 const DEPTH = '10px'
 
-/** Read-only: the selected step at 50% (design-system §3). Static class names, so Tailwind finds them. */
+/** Read-only: the selected step at 50% (design-system §3). Static class names for Tailwind. */
 const fillReadOnly: Record<ItemStatus, string> = {
   idea: 'bg-status-idea/50',
   draft: 'bg-status-draft/50',
