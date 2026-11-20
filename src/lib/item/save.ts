@@ -5,7 +5,7 @@ import { isItemStatus } from '@/lib/items'
 import type { User } from '@/payload-types'
 
 import { FIELD_MESSAGES, isId, parseItemInput } from './input'
-import type { FieldErrors, ItemActionResult, ItemField } from './types'
+import type { FieldErrors, ItemActionResult, ItemField, ItemInput } from './types'
 
 const COLLECTION = 'content-items'
 
@@ -115,6 +115,28 @@ export async function createItemAs(
   }
 }
 
+/** One update as the user (PERM-8). Every change to an item that exists goes through here. */
+async function updateAs(
+  payload: Payload,
+  user: User,
+  id: number,
+  data: Partial<ItemInput> | { archived: boolean },
+  staleMessage?: string,
+): Promise<ItemActionResult> {
+  try {
+    const doc = await payload.update({
+      collection: COLLECTION,
+      id,
+      data,
+      user,
+      overrideAccess: false,
+    })
+    return { ok: true, id: doc.id }
+  } catch (error) {
+    return toFailure(payload, user, error, id, staleMessage)
+  }
+}
+
 /**
  * Updates an item as the user in one update (ITEM-6). A failed rule or validation saves nothing.
  * A malformed id cannot identify an item the user can read, so it gives `no-access`.
@@ -129,18 +151,7 @@ export async function updateItemAs(
   const parsed = parseItemInput(raw)
   if (!parsed.ok) return { ok: false, reason: 'invalid', errors: parsed.errors }
   if (!(await authorsExist(payload, user, parsed.input.authors))) return UNKNOWN_AUTHORS
-  try {
-    const doc = await payload.update({
-      collection: COLLECTION,
-      id,
-      data: parsed.input,
-      user,
-      overrideAccess: false,
-    })
-    return { ok: true, id: doc.id }
-  } catch (error) {
-    return toFailure(payload, user, error, id)
-  }
+  return updateAs(payload, user, id, parsed.input)
 }
 
 /**
@@ -157,18 +168,7 @@ export async function setArchivedAs(
   if (typeof archived !== 'boolean') {
     return { ok: false, reason: 'rejected', message: 'The change is not valid.' }
   }
-  try {
-    const doc = await payload.update({
-      collection: COLLECTION,
-      id,
-      data: { archived },
-      user,
-      overrideAccess: false,
-    })
-    return { ok: true, id: doc.id }
-  } catch (error) {
-    return toFailure(payload, user, error, id)
-  }
+  return updateAs(payload, user, id, { archived })
 }
 
 /**
@@ -185,16 +185,5 @@ export async function moveItemAs(
   if (!isItemStatus(status)) {
     return { ok: false, reason: 'invalid', errors: { status: FIELD_MESSAGES.status } }
   }
-  try {
-    const doc = await payload.update({
-      collection: COLLECTION,
-      id,
-      data: { status },
-      user,
-      overrideAccess: false,
-    })
-    return { ok: true, id: doc.id }
-  } catch (error) {
-    return toFailure(payload, user, error, id, MOVE_STALE_MESSAGE)
-  }
+  return updateAs(payload, user, id, { status }, MOVE_STALE_MESSAGE)
 }

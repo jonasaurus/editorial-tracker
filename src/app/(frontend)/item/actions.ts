@@ -2,11 +2,12 @@
 
 import config from '@payload-config'
 import { refresh } from 'next/cache'
-import { getPayload } from 'payload'
+import { getPayload, type Payload } from 'payload'
 
 import { getUser } from '@/lib/auth/session'
 import { createItemAs, moveItemAs, setArchivedAs, updateItemAs } from '@/lib/item/save'
 import type { ItemActionResult } from '@/lib/item/types'
+import type { User } from '@/payload-types'
 
 /*
  * The item actions only check the session and call the core in `src/lib/item/save.ts`.
@@ -24,30 +25,31 @@ function refreshOnSuccess(result: ItemActionResult): ItemActionResult {
   return result
 }
 
-/** Creates an item (ITEM-11). */
-export async function createItem(raw: unknown): Promise<ItemActionResult> {
+/** Runs a write as the logged-in user. Each action checks the session itself (ERR-5). */
+async function asUser(
+  write: (payload: Payload, user: User) => Promise<ItemActionResult>,
+): Promise<ItemActionResult> {
   const user = await getUser()
   if (!user) return SESSION_EXPIRED
-  return refreshOnSuccess(await createItemAs(await getPayload({ config }), user, raw))
+  return refreshOnSuccess(await write(await getPayload({ config }), user))
+}
+
+/** Creates an item (ITEM-11). */
+export async function createItem(raw: unknown): Promise<ItemActionResult> {
+  return asUser((payload, user) => createItemAs(payload, user, raw))
 }
 
 /** Updates an item in one update (ITEM-6). */
 export async function updateItem(id: unknown, raw: unknown): Promise<ItemActionResult> {
-  const user = await getUser()
-  if (!user) return SESSION_EXPIRED
-  return refreshOnSuccess(await updateItemAs(await getPayload({ config }), user, id, raw))
+  return asUser((payload, user) => updateItemAs(payload, user, id, raw))
 }
 
 /** Archives or unarchives an item (ITEM-8, ITEM-9). */
 export async function setArchived(id: unknown, archived: unknown): Promise<ItemActionResult> {
-  const user = await getUser()
-  if (!user) return SESSION_EXPIRED
-  return refreshOnSuccess(await setArchivedAs(await getPayload({ config }), user, id, archived))
+  return asUser((payload, user) => setArchivedAs(payload, user, id, archived))
 }
 
 /** Moves an item to another status: a drop on the board (DND-1). */
 export async function moveItem(id: unknown, status: unknown): Promise<ItemActionResult> {
-  const user = await getUser()
-  if (!user) return SESSION_EXPIRED
-  return refreshOnSuccess(await moveItemAs(await getPayload({ config }), user, id, status))
+  return asUser((payload, user) => moveItemAs(payload, user, id, status))
 }
