@@ -31,9 +31,9 @@ beforeAll(async () => {
   })
 })
 
-// ADR 0012, ITEM-6: one transaction per operation. A failed write saves nothing.
+// ADR 0012: one transaction per operation. A failed write saves nothing.
 describe.each(transports)('transactions ($name)', (transport) => {
-  it('ITEM-6: a create with an unknown author saves no item', async () => {
+  it('ADR 0012: a create with an unknown author saves no item', async () => {
     const before = (await payload.count({ collection: 'content-items' })).totalDocs
     const write = transport.create(editor, 'content-items', {
       title: `Unknown author ${transport.name}`,
@@ -44,7 +44,7 @@ describe.each(transports)('transactions ($name)', (transport) => {
     expect((await payload.count({ collection: 'content-items' })).totalDocs).toBe(before)
   })
 
-  it('ITEM-6: an update with an unknown author changes no field', async () => {
+  it('ADR 0012, ITEM-6: an update with an unknown author changes no field', async () => {
     const item = await payload.create({
       collection: 'content-items',
       data: { title: 'Old title', type: 'article', status: 'idea', authors: [editor.user.id] },

@@ -58,7 +58,7 @@ beforeAll(async () => {
 })
 
 describe('moveItemAs', () => {
-  it('DND-1, AUTH-3, MODEL-2: an editor moves a draft to published; publishedAt is set', async () => {
+  it('DND-1, PERM-3, MODEL-2: an editor moves a draft to published; publishedAt is set', async () => {
     const item = await seedItem({ status: 'draft', createdBy: contributor, authors: [contributor] })
     const result = await moveItemAs(payload, editor, item.id, 'published')
     expect(result).toEqual({ ok: true, id: item.id })
@@ -68,7 +68,7 @@ describe('moveItemAs', () => {
     expect(saved.title).toBe(item.title)
   })
 
-  it('DND-1, AUTH-3: an editor moves a published item back to review (unpublish)', async () => {
+  it('DND-1, PERM-3: an editor moves a published item back to review (unpublish)', async () => {
     const item = await seedItem({ status: 'draft', createdBy: editor, authors: [editor] })
     await moveItemAs(payload, editor, item.id, 'published')
     const result = await moveItemAs(payload, editor, item.id, 'review')

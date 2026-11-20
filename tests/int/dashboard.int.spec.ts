@@ -201,7 +201,7 @@ describe('getDashboardData', () => {
     expect(data.items).toHaveLength(4)
   })
 
-  it('maps users to names only, with no emails (PERM-8 view data)', async () => {
+  it('maps users to names only, with no emails', async () => {
     const data = await getDashboardData(payload, editor, DEFAULTS)
     const both = data.items.find((item) => item.title === 'B both')
     expect(both).toMatchObject({

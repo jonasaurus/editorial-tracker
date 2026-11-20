@@ -235,7 +235,7 @@ describe('updateItemAs', () => {
     expect(ids((await readItem(item.id)).authors)).toEqual([contributor.id, other.id])
   })
 
-  it('ITEM-6: an unknown author id gives a field error and saves nothing', async () => {
+  it('ADR 0012: an unknown author id gives a field error and saves nothing', async () => {
     const item = await seedItem({ createdBy: editor, authors: [editor] })
     const result = await updateItemAs(
       payload,
@@ -404,7 +404,7 @@ describe('setArchivedAs', () => {
 })
 
 describe('getItemDialogData', () => {
-  it('ITEM-11: a new item gives the users by name, with id, name and role only', async () => {
+  it('ITEM-3: a new item gives the users by name, with id, name and role only', async () => {
     const state = await getItemDialogData(payload, contributor, { kind: 'new' })
     expect(state.kind).toBe('new')
     if (state.kind !== 'new') return

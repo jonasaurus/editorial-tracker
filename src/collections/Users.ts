@@ -3,7 +3,7 @@ import type { Access, CollectionConfig } from 'payload'
 import { isEditor, isEditorField, isEditorUser, isLoggedIn } from '@/access'
 import { ROLE_LABELS, ROLES, toOptions } from '@/lib/items'
 
-/** Editors change every user. Other users change only their own account. */
+/** ROLE-6: editors change every user. Other users change only their own account. */
 const isEditorOrSelf: Access = ({ req: { user } }) => {
   if (!user) return false
   if (isEditorUser(user)) return true
@@ -30,15 +30,15 @@ export const Users: CollectionConfig = {
     // ROLE-3: only editors open the Admin panel.
     admin: ({ req }) => isEditorUser(req.user),
     create: isEditor,
-    // Every logged-in user reads all users: the author picker lists them.
+    // ROLE-5: every logged-in user reads all users (the author picker lists them).
     read: isLoggedIn,
     update: isEditorOrSelf,
     delete: isEditor,
-    // The default lets any logged-in user unlock any account.
+    // ROLE-6: only editors unlock. Payload's default lets any logged-in user unlock any account.
     unlock: isEditor,
   },
   fields: [
-    // Email added by default
+    // Payload adds `email` and the password fields to an auth collection.
     {
       name: 'name',
       type: 'text',
@@ -49,7 +49,8 @@ export const Users: CollectionConfig = {
       type: 'select',
       required: true,
       options: toOptions(ROLES, ROLE_LABELS),
-      // The first user is an editor: the Admin panel "create first user" form skips field access.
+      // ROLE-7: the first user is an editor. The Admin panel "create first user" form skips field
+      // access, so the default sets the role.
       defaultValue: async ({ req }) => {
         const { totalDocs } = await req.payload.count({ collection: 'users', req })
         return totalDocs === 0 ? 'editor' : 'contributor'

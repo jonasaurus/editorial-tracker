@@ -52,7 +52,7 @@ describe('LOGIN-1 login', () => {
 
   it('LOGIN-1 the token works as the payload-token cookie, also with an Origin header', async () => {
     // A Server Action redirect sends the cookie and the Origin. With `csrf` empty, Payload
-    // accepts every Origin. This test fails if someone sets `csrf` or `serverURL` later.
+    // accepts every Origin. The test fails when `csrf` or `serverURL` is set.
     const user = await freshUser()
     const token = await loginToken(user.email)
     const headers = new Headers({

@@ -39,7 +39,7 @@ type Props = {
   errorId?: string
 }
 
-/** The deadline field: a button that looks like an input, with a calendar (DL-4, DL-5). */
+/** The deadline field: a button that looks like an input, with a calendar (DL-2, DL-4). */
 export function DeadlineField({
   id,
   value,
