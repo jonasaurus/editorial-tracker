@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/table'
 import type { BoardItem } from '@/lib/dashboard/board'
 import { LIST_SORTS, type ListSort, type SortDir } from '@/lib/dashboard/params'
+import type { PlainDate } from '@/lib/deadline'
 import { STATUS_LABELS, TYPE_LABELS } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
@@ -37,8 +38,7 @@ const columns: Record<ListSort, { label: string; className?: string }> = {
 type Props = {
   /** The sorted rows. Empty: the table shows only its header. */
   rows: BoardItem[]
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   sort: ListSort
   dir: SortDir
   /** The URL of each column header: the sort after a click on it (LIST-3). */
@@ -97,7 +97,7 @@ export function ItemTable({ rows, today, sort, dir, sortHref, itemHref, classNam
  * One item. LIST-6: the title link stretches over the whole row, so a click anywhere opens the item.
  * The link name is the title (ADR 0005).
  */
-function ItemRow({ item, today, href }: { item: BoardItem; today: string; href: string }) {
+function ItemRow({ item, today, href }: { item: BoardItem; today: PlainDate; href: string }) {
   const { archived } = item
   const cell = 'h-12 px-3 py-2'
 

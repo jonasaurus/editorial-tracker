@@ -4,6 +4,7 @@ import {
   getDeadlineState,
   type DeadlineState,
   type DeadlineVariant,
+  type PlainDate,
 } from '@/lib/deadline'
 import { cn } from '@/lib/utils'
 
@@ -18,8 +19,7 @@ const tone: Record<DeadlineState, string> = {
 
 type Props = {
   item: Pick<BoardItem, 'deadline' | 'status' | 'archived'>
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   variant: DeadlineVariant
   className?: string
 }

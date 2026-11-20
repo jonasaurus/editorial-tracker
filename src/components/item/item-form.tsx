@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { loginPath } from '@/lib/auth/next-path'
+import type { PlainDate } from '@/lib/deadline'
 import { getItemAbilities, type ItemAbilities } from '@/lib/item/abilities'
 import {
   getKicker,
@@ -54,8 +55,7 @@ type FormState = Exclude<ItemDialogState, { kind: 'not-found' }>
 type Props = {
   state: FormState
   user: { id: number; role: Role }
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   /** Closes at once (ITEM-2, ITEM-7). */
   onClose: () => void
   /** Closes, or asks first when the form has unsaved edits (ITEM-10). */
@@ -466,7 +466,7 @@ function ReadOnlyBanner({ item, abilities }: { item: ItemDetail; abilities: Item
 }
 
 /** The metadata line (ITEM-3, design-system §6): created, then the last event. */
-function MetaLine({ item, today }: { item: ItemDetail; today: string }) {
+function MetaLine({ item, today }: { item: ItemDetail; today: PlainDate }) {
   const meta = formatItemMeta(item, today)
   return (
     <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">

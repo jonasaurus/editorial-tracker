@@ -6,6 +6,7 @@ import { StatusTabs } from '@/components/dashboard/status-tabs'
 import type { BoardItem } from '@/lib/dashboard/board'
 import type { ListEmpty } from '@/lib/dashboard/list'
 import type { ListSort, SortDir } from '@/lib/dashboard/params'
+import type { PlainDate } from '@/lib/deadline'
 import type { ItemStatus } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
@@ -27,8 +28,7 @@ const emptyTabText: Record<ItemStatus | 'all', { title: string; text: string }> 
 type Props = {
   /** The sorted rows of the selected tab. */
   rows: BoardItem[]
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   /** The selected tab. `null` is All. */
   status: ItemStatus | null
   sort: ListSort

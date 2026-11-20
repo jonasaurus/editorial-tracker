@@ -1,3 +1,4 @@
+import type { IsoTimestamp, PlainDate } from '@/lib/deadline'
 import type { ItemStatus, ItemType, Role } from '@/lib/items'
 
 /** A user in the author picker. No email goes to the page. */
@@ -12,16 +13,14 @@ export type ItemDetail = {
   title: string
   status: ItemStatus
   type: ItemType
-  /** A plain date `YYYY-MM-DD`, or null (ADR 0007). */
-  deadline: string | null
+  deadline: PlainDate | null
   archived: boolean
   /** The authors in the stored order. */
   authors: { id: number; name: string }[]
   creatorName: string | null
-  /** ISO timestamps. */
-  createdAt: string
-  updatedAt: string
-  publishedAt: string | null
+  createdAt: IsoTimestamp
+  updatedAt: IsoTimestamp
+  publishedAt: IsoTimestamp | null
 }
 
 /** What the item dialog shows (ITEM-1, ITEM-11, ITEM-12). */
@@ -35,7 +34,7 @@ export type ItemInput = {
   title: string
   status: ItemStatus
   type: ItemType
-  deadline: string | null
+  deadline: PlainDate | null
   /** User ids, in order. */
   authors: number[]
 }

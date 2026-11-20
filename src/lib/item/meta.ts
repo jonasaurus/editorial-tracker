@@ -1,4 +1,10 @@
-import { formatPlainDate, toCopenhagenDate, toCopenhagenTime } from '@/lib/deadline'
+import {
+  formatPlainDate,
+  type IsoTimestamp,
+  type PlainDate,
+  toCopenhagenDate,
+  toCopenhagenTime,
+} from '@/lib/deadline'
 
 import type { ItemDetail, TextPart } from './types'
 
@@ -12,28 +18,28 @@ export type ItemMeta = {
 }
 
 /** "today" when the Copenhagen date of `iso` is `today`, else "3 Nov" (DL-1, DL-4). */
-function dateWord(iso: string, today: string): string {
+function dateWord(iso: IsoTimestamp, today: PlainDate): string {
   const day = toCopenhagenDate(iso)
   return day === today ? 'today' : formatPlainDate(day, today)
 }
 
 /** "Published today" or "Published 3 Nov": the Copenhagen date of `publishedAt` (BOARD-3, ITEM-3). */
-export function formatPublished(publishedAt: string, today: string): string {
+export function formatPublished(publishedAt: IsoTimestamp, today: PlainDate): string {
   return `Published ${dateWord(publishedAt, today)}`
 }
 
 /** The date word and the `HH:mm` time in Copenhagen, for example "today 09:12". */
-function dateTime(iso: string, today: string): string {
+function dateTime(iso: IsoTimestamp, today: PlainDate): string {
   return `${dateWord(iso, today)} ${toCopenhagenTime(iso)}`
 }
 
-/** The metadata line of the dialog (ITEM-3, design-system §6). `today`: `YYYY-MM-DD` (DL-1). */
+/** The metadata line of the dialog (ITEM-3, design-system §6). */
 export function formatItemMeta(
   item: Pick<
     ItemDetail,
     'creatorName' | 'createdAt' | 'updatedAt' | 'publishedAt' | 'status' | 'archived'
   >,
-  today: string,
+  today: PlainDate,
 ): ItemMeta {
   return {
     creatorName: item.creatorName,
@@ -44,7 +50,7 @@ export function formatItemMeta(
 
 function formatEvent(
   item: Pick<ItemDetail, 'updatedAt' | 'publishedAt' | 'status' | 'archived'>,
-  today: string,
+  today: PlainDate,
 ): TextPart[] {
   // MODEL-3 has no `archivedAt`. An archived item is read-only (PERM-6), so the last update
   // is the archive.

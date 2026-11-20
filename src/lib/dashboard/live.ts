@@ -1,3 +1,5 @@
+import type { IsoTimestamp, PlainDate } from '@/lib/deadline'
+
 /** LIVE-1: the poll interval. */
 export const LIVE_INTERVAL_MS = 5000
 
@@ -10,9 +12,9 @@ export type PauseReason = 'dialog' | 'confirm' | 'drag' | 'move'
  * Two equal texts mean: nothing to refresh.
  */
 export function formatVersion(
-  today: string,
+  today: PlainDate,
   count: number,
-  latestUpdatedAt: string | null,
+  latestUpdatedAt: IsoTimestamp | null,
 ): string {
   return `${today}:${count}:${latestUpdatedAt ?? '-'}`
 }

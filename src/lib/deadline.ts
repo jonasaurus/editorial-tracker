@@ -1,6 +1,15 @@
 import type { ContentItem } from '@/payload-types'
 
 /**
+ * A plain date `YYYY-MM-DD`: no time and no time zone (ADR 0007). `today` is always the
+ * server date in Europe/Copenhagen (DL-1).
+ */
+export type PlainDate = string
+
+/** An ISO 8601 timestamp in UTC, as Payload stores it. */
+export type IsoTimestamp = string
+
+/**
  * True when the value is a real calendar date in the format `YYYY-MM-DD` (ADR 0007).
  * Rejects timestamps and dates that do not exist, for example `2026-02-30`.
  */
@@ -17,13 +26,13 @@ export type DeadlineState = 'none' | 'upcoming' | 'today' | 'overdue' | 'done'
 export type DeadlineVariant = 'short' | 'long'
 
 /** DL-1: today as `YYYY-MM-DD` in Europe/Copenhagen. */
-export function todayInCopenhagen(now: Date = new Date()): string {
+export function todayInCopenhagen(now: Date = new Date()): PlainDate {
   // The en-CA locale writes dates as `YYYY-MM-DD`.
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen' }).format(now)
 }
 
 /** The `YYYY-MM-DD` date of an ISO timestamp in Europe/Copenhagen. */
-export function toCopenhagenDate(iso: string): string {
+export function toCopenhagenDate(iso: IsoTimestamp): PlainDate {
   return todayInCopenhagen(new Date(iso))
 }
 
@@ -35,7 +44,7 @@ const COPENHAGEN_TIME = new Intl.DateTimeFormat('en-GB', {
 })
 
 /** The `HH:mm` time (24 hours) of an ISO timestamp in Europe/Copenhagen. */
-export function toCopenhagenTime(iso: string): string {
+export function toCopenhagenTime(iso: IsoTimestamp): string {
   const parts = COPENHAGEN_TIME.formatToParts(new Date(iso))
   const part = (type: 'hour' | 'minute') => parts.find((p) => p.type === type)?.value ?? '00'
   return `${part('hour')}:${part('minute')}`
@@ -45,19 +54,19 @@ export function toCopenhagenTime(iso: string): string {
  * The calendar uses local `Date` values. Local constructors and getters keep the same day in
  * every time zone: no UTC shift.
  */
-export function plainDateToLocalDate(day: string): Date {
+export function plainDateToLocalDate(day: PlainDate): Date {
   return new Date(Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10)))
 }
 
 /** The local day of a calendar `Date` as `YYYY-MM-DD`. */
-export function localDateToPlainDate(date: Date): string {
+export function localDateToPlainDate(date: Date): PlainDate {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${String(date.getFullYear()).padStart(4, '0')}-${month}-${day}`
 }
 
 /** Adds days to a plain date. UTC math, so daylight saving time has no effect. */
-export function addDays(day: string, days: number): string {
+export function addDays(day: PlainDate, days: number): PlainDate {
   const date = new Date(`${day}T00:00:00.000Z`)
   date.setUTCDate(date.getUTCDate() + days)
   return date.toISOString().slice(0, 10)
@@ -66,7 +75,7 @@ export function addDays(day: string, days: number): string {
 /** DL-2, DL-3: the state of the item's deadline on `today`. Compares plain dates only. */
 export function getDeadlineState(
   item: Pick<ContentItem, 'deadline' | 'status' | 'archived'>,
-  today: string,
+  today: PlainDate,
 ): DeadlineState {
   if (item.status === 'published' || item.archived === true) return 'done'
   if (!item.deadline) return 'none'
@@ -95,15 +104,15 @@ function formatDate(day: string, withYear: boolean): string {
 }
 
 /** A plain date in the short form: "3 Nov", or "3 Nov 2027" when not in the year of `today`. */
-export function formatPlainDate(day: string, today: string): string {
+export function formatPlainDate(day: PlainDate, today: PlainDate): string {
   return formatDate(day, day.slice(0, 4) !== today.slice(0, 4))
 }
 
 /** DL-4: all deadline text (design-system §5). */
 export function formatDeadline(
-  deadline: string | null | undefined,
+  deadline: PlainDate | null | undefined,
   state: DeadlineState,
-  today: string,
+  today: PlainDate,
   variant: DeadlineVariant,
 ): string {
   if (state === 'none' || !deadline) return 'No deadline'

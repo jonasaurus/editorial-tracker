@@ -12,6 +12,7 @@ import {
   getDeadlineState,
   localDateToPlainDate,
   plainDateToLocalDate,
+  type PlainDate,
 } from '@/lib/deadline'
 import type { ItemStatus } from '@/lib/items'
 import { cn } from '@/lib/utils'
@@ -32,8 +33,7 @@ type Props = {
   onChange: (deadline: string | null) => void
   status: ItemStatus
   archived: boolean
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   disabled: boolean
   error?: string
   errorId?: string

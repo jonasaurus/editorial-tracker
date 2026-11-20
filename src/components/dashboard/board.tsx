@@ -1,6 +1,7 @@
 import { BoardDnd } from '@/components/dashboard/board-dnd'
 import { NoItemsState, NoResultsState } from '@/components/dashboard/empty-state'
 import type { BoardItem } from '@/lib/dashboard/board'
+import type { PlainDate } from '@/lib/deadline'
 import type { Role } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
@@ -15,8 +16,7 @@ export type BoardEmpty =
 type Props = {
   /** The items on the board. The client groups them into columns (BOARD-1). */
   items: BoardItem[]
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   empty: BoardEmpty
   /** The role of the user: which items move and where (DND-1, DND-2). */
   role: Role

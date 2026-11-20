@@ -7,14 +7,14 @@ import type { ReactNode } from 'react'
 
 import { DeadlineText } from '@/components/deadline-text'
 import type { BoardItem } from '@/lib/dashboard/board'
+import type { PlainDate } from '@/lib/deadline'
 import { formatPublished } from '@/lib/item/meta'
 import { isItemStatus, type ItemStatus, TYPE_LABELS } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
 type Props = {
   item: BoardItem
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   /** The URL that opens the item in the dialog (BOARD-4, ITEM-1). */
   href: string
 }

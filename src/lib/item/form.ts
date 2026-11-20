@@ -1,3 +1,4 @@
+import type { PlainDate } from '@/lib/deadline'
 import { type ItemStatus, type ItemType, type Role, STATUS_LABELS, TYPE_LABELS } from '@/lib/items'
 
 import { FIELD_MESSAGES } from './input'
@@ -8,7 +9,7 @@ export type ItemFormValues = {
   title: string
   status: ItemStatus
   type: ItemType
-  deadline: string | null
+  deadline: PlainDate | null
   /** In the shown order. */
   authorIds: number[]
 }

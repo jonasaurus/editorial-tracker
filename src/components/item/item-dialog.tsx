@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/item/confirm-dialog'
 import { ItemForm } from '@/components/item/item-form'
 import { NotFoundContent } from '@/components/item/not-found-dialog'
 import { usePauseLive } from '@/components/live/live-updates'
+import type { PlainDate } from '@/lib/deadline'
 import type { ItemDialogState } from '@/lib/item/types'
 import type { Role } from '@/lib/items'
 import { showError } from '@/lib/toast'
@@ -17,8 +18,7 @@ type Props = {
   state: ItemDialogState
   /** The dashboard URL without `item` (ITEM-2). */
   closeHref: string
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   user: { id: number; role: Role }
 }
 

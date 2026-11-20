@@ -1,4 +1,4 @@
-import { getDeadlineState } from '@/lib/deadline'
+import { getDeadlineState, type IsoTimestamp, type PlainDate } from '@/lib/deadline'
 import { type ItemStatus, type ItemType, STATUSES } from '@/lib/items'
 import type { ContentItem, User } from '@/payload-types'
 
@@ -8,9 +8,9 @@ export type BoardItem = {
   title: string
   type: ItemType
   status: ItemStatus
-  deadline: string | null
-  /** ISO timestamp (UTC, `…Z`). The server sets it on each change to Published (MODEL-2). */
-  publishedAt: string | null
+  deadline: PlainDate | null
+  /** The server sets it on each change to Published (MODEL-2). */
+  publishedAt: IsoTimestamp | null
   archived: boolean
   /** Names of the authors, in the stored order. */
   authorNames: string[]
@@ -104,7 +104,7 @@ export function compareInColumn(status: ItemStatus): (a: SortFields, b: SortFiel
 }
 
 /** Groups items into status columns and counts them (BOARD-1, BOARD-2, DL-5). */
-export function buildBoard(items: BoardItem[], today: string): Board {
+export function buildBoard(items: BoardItem[], today: PlainDate): Board {
   const columns = STATUSES.map((status): BoardColumn => {
     const inColumn = items.filter((item) => item.status === status)
     const compare = compareInColumn(status)

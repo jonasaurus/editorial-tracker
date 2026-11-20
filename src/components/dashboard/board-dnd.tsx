@@ -34,14 +34,14 @@ import {
   getMoveError,
   MOVE_INSTRUCTIONS,
 } from '@/lib/dashboard/dnd'
+import type { PlainDate } from '@/lib/deadline'
 import type { ItemActionResult } from '@/lib/item/types'
 import { isItemStatus, type ItemStatus, type Role } from '@/lib/items'
 import { showError } from '@/lib/toast'
 
 type Props = {
   items: BoardItem[]
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   role: Role
   /** The URL that opens each item in the dialog (BOARD-4, ITEM-1). */
   hrefs: Record<number, string>

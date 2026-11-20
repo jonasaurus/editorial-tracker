@@ -9,6 +9,7 @@ import { DraggableItemCard, ItemCard, isItemDragData } from '@/components/dashbo
 import { StatusMarker } from '@/components/dashboard/status-marker'
 import { formatColumnCount, type BoardColumn as Column } from '@/lib/dashboard/board'
 import { canDropOn, canMoveItem, getDropIndex } from '@/lib/dashboard/dnd'
+import type { PlainDate } from '@/lib/deadline'
 import { STATUS_LABELS, type ItemStatus, type Role } from '@/lib/items'
 import { cn } from '@/lib/utils'
 
@@ -35,8 +36,7 @@ type Slot = 'locked' | 'publish' | 'move' | null
 
 type Props = {
   column: Column
-  /** Today as `YYYY-MM-DD` in Europe/Copenhagen (DL-1). */
-  today: string
+  today: PlainDate
   role: Role
   /** The URL that opens each item in the dialog (BOARD-4, ITEM-1). */
   hrefs: Record<number, string>
