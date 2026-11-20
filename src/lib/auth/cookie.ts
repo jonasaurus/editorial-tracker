@@ -13,6 +13,9 @@ export type SessionCookie = {
   secure: boolean
 }
 
+/** Payload writes `Lax`. `cookies().set` takes `lax`. */
+const SAME_SITE = { Lax: 'lax', Strict: 'strict', None: 'none' } as const
+
 /** The name of the session cookie (`payload-token` with the default prefix). */
 export const sessionCookieName = (cookiePrefix: string): string => `${cookiePrefix}-token`
 
@@ -38,7 +41,7 @@ export function sessionCookie(
     expires: cookie.expires ? new Date(cookie.expires) : undefined,
     httpOnly: true,
     path: cookie.path ?? '/',
-    sameSite: cookie.sameSite?.toLowerCase() as SessionCookie['sameSite'],
+    sameSite: cookie.sameSite && SAME_SITE[cookie.sameSite],
     secure: cookie.secure ?? false,
   }
 }

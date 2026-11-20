@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import {
   type ComponentProps,
-  type FormEvent,
   type KeyboardEvent,
+  type SubmitEvent,
   useEffect,
   useId,
   useLayoutEffect,
@@ -45,7 +45,7 @@ import {
 } from '@/lib/item/form'
 import { formatItemMeta } from '@/lib/item/meta'
 import type { FieldErrors, ItemActionResult, ItemDetail, ItemDialogState } from '@/lib/item/types'
-import { type ItemType, type Role, TYPE_LABELS, TYPES } from '@/lib/items'
+import { isItemType, type Role, TYPE_LABELS, TYPES } from '@/lib/items'
 import { showError } from '@/lib/toast'
 import { cn } from '@/lib/utils'
 
@@ -83,9 +83,7 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
 
   // LIVE-2: no live refresh while a confirm is open. A refresh would remount the form.
   const pause = usePauseLive()
-  useEffect(() => {
-    if (confirm) return pause('confirm')
-  }, [confirm, pause])
+  useEffect(() => (confirm ? pause('confirm') : undefined), [confirm, pause])
 
   const id = useId()
   const ids = {
@@ -142,7 +140,7 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
     })
   }
 
-  function save(event: FormEvent) {
+  function save(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     if (readOnly || pending) return
     const found = validateValues(values)
@@ -237,7 +235,9 @@ export function ItemForm({ state, user, today, onClose, onRequestClose, onDirtyC
             <FieldLabel htmlFor={ids.type}>Type</FieldLabel>
             <Select
               value={values.type}
-              onValueChange={(type) => set('type', toType(type))}
+              onValueChange={(type) => {
+                if (isItemType(type)) set('type', type)
+              }}
               disabled={readOnly}
             >
               <SelectTrigger
@@ -425,11 +425,6 @@ function TitleField({ value, onValueChange, className, ...props }: TitleFieldPro
       {...props}
     />
   )
-}
-
-/** The `Select` gives a string. Only listed types reach here. */
-function toType(value: string): ItemType {
-  return TYPES.find((type) => type === value) ?? 'article'
 }
 
 function FieldLabel({ htmlFor, children }: { htmlFor: string; children: string }) {
